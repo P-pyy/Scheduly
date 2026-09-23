@@ -1,39 +1,28 @@
 # Scheduly
 
-Scheduly is a modern appointment booking and service business management platform built for salons, studios, spas, barbershops, and service-driven businesses. It combines client discovery, real-time scheduling, business dashboard analytics, and CRM workflows into a single polished product experience.
+Scheduly is a modern appointment-booking and service business management prototype built for salons, studios, spas, barbershops, and similar service-driven businesses. It presents a client booking experience, a business operations dashboard, and an admin oversight view in a single React + TypeScript app.
 
-The project is a TypeScript + React + Vite front-end prototype that simulates a booking marketplace and business operations console across client, business, and admin views.
+## Overview
 
-## ✨ Highlights
+The app is designed to simulate a marketplace for discovering businesses, browsing services, selecting time slots, and managing bookings. It is structured around three primary experiences:
 
-- Client-facing storefront and booking flow
-- Studio discovery and service browsing
-- Appointment booking with slot selection and confirmation
-- Business dashboard for calendar, bookings, services, and analytics
-- Client CRM and booking history management
-- Admin console for KYC, onboarding, and operational controls
-- Responsive UI with animated transitions and modern dashboard styling
+- Client mode for browsing studios and booking appointments
+- Business mode for managing calendar, bookings, services, clients, and analytics
+- Admin mode for reviewing onboarding, verification, and operational workflows
 
-## 🧭 Product experience
-
-Scheduly is organized around three main perspectives:
-
-- Client mode: discover businesses, browse services, book appointments, manage favorites and profile
-- Business mode: manage bookings, calendar, services, clients, analytics and operations
-- Admin mode: review onboarding, compliance, and business verification workflows
-
-## 🛠️ Tech stack
+## Stack
 
 - React 19
 - TypeScript
 - Vite
 - Tailwind CSS
-- Motion (animation library)
-- Google GenAI package (included in the app dependencies)
+- Framer Motion / Motion
+- Google GenAI package
+- Lucide React icons
 
-## 📁 Project structure
+## Project structure
 
-```bash
+```text
 Scheduly/
 ├── index.html
 ├── package.json
@@ -64,15 +53,27 @@ Scheduly/
 │       ├── AdminConsoleScreen.tsx
 │       ├── FavoritesScreen.tsx
 │       └── AuthModal.tsx
-└── README.md
+├── README.md
+└── public/
 ```
 
-## 🚀 Getting started
+## Features
+
+- Studio discovery and service browsing
+- Service detail pages with pricing and availability
+- Appointment booking flow with date and time selection
+- Client bookings, favorites, and profile management
+- Business dashboard for operations and analytics
+- Client CRM with booking history and customer information
+- Admin console for onboarding and compliance review
+- Responsive layout for mobile-first booking experiences
+
+## Getting started
 
 ### Prerequisites
 
 - Node.js 18 or later
-- npm or yarn
+- npm
 
 ### Install dependencies
 
@@ -80,13 +81,13 @@ Scheduly/
 npm install
 ```
 
-### Run locally
+### Run the app locally
 
 ```bash
 npm run dev
 ```
 
-This starts the development server on port 3000.
+This starts the Vite app on port 3000.
 
 ### Build for production
 
@@ -94,51 +95,20 @@ This starts the development server on port 3000.
 npm run build
 ```
 
-### Run type checks
+### Type check
 
 ```bash
 npm run lint
 ```
 
-## 🌐 App behavior overview
+## App behavior
 
-### Client side
+The app uses a single-page React interface to switch between client, business, and admin views. Booking data, studio listings, services, and UI state are driven primarily from local mock data and component state rather than a backend API.
 
-Users can:
+## Notes
 
-- browse studio listings and service categories
-- view detailed service pages and pricing
-- choose appointment times and confirm bookings
-- track current and past reservations
-- manage saved favorites and profile details
-
-### Business side
-
-Business owners can:
-
-- monitor the overview dashboard
-- manage calendar events and bookings
-- accept or decline appointment requests
-- track client records and preferences
-- adjust service offerings and pricing
-- review analytics and occupancy trends
-
-### Admin side
-
-Admins can:
-
-- review studio onboarding and verification state
-- inspect KYC and compliance details
-- manage operational platform workflows
-
-## 📸 Notes
-
-This repository is primarily a polished front-end experience and product mockup rather than a fully integrated production backend. The data is driven from local mock data and UI state inside `src/data/mockData.ts`.
-
-## 🏁 Summary
-
-Scheduly is designed to demonstrate a premium appointment-booking ecosystem for creative and service businesses. It focuses on UX, conversion, operational visibility, and modern customer experience across multiple roles in one product.
+This repository is a polished front-end prototype rather than a full production-ready booking platform. It is best suited for UI exploration, product demos, and design validation for a service-booking workflow.
 
 ## License
 
-This project currently does not include a license file. If needed, add one before production deployment or public distribution.
+This project does not currently include a license file. If you plan to distribute or deploy it publicly, add an appropriate license before release.
