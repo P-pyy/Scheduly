@@ -69,7 +69,7 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full pb-32 max-w-2xl mx-auto">
+    <div className="flex flex-col w-full pb-28 lg:pb-16 max-w-5xl mx-auto lg:px-6">
       {/* Stepper Progress Bar */}
       <div className="px-4 pt-3 pb-2 flex items-center justify-between border-b border-[#e9edff] bg-white">
         <div className="flex items-center gap-2">
@@ -345,18 +345,18 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
       </div>
 
       {/* Sticky Bottom Confirmation Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl shadow-[0_-8px_24px_rgba(20,27,43,0.08)] px-4 py-3 pb-[env(safe-area-inset-bottom,12px)] border-t border-[#e9edff]">
-        <div className="max-w-md mx-auto flex flex-col gap-2">
-          <div className="flex items-center justify-between">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl shadow-[0_-8px_24px_rgba(20,27,43,0.08)] px-4 py-2.5 pb-[env(safe-area-inset-bottom,10px)] border-t border-[#e9edff]">
+        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center justify-between sm:justify-start gap-4">
             <div>
               <div className="text-[11px] text-[#777587]">Scheduled Time</div>
               <div className="text-[14px] font-bold text-[#141b2b]">
                 Tue, Oct {selectedDay} • {selectedTime}
               </div>
             </div>
-            <div className="text-right">
+            <div className="sm:border-l sm:border-[#e9edff] sm:pl-4">
               <div className="text-[11px] text-[#777587]">Total Due</div>
-              <div className="text-[20px] font-bold text-[#3525cd] font-display leading-none">
+              <div className="text-[18px] font-bold text-[#3525cd] font-display leading-none">
                 ₱{service.price.toLocaleString()}
               </div>
             </div>
@@ -365,17 +365,17 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
           <button
             disabled={isSubmitting}
             onClick={handleConfirm}
-            className="w-full h-12 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[15px] font-semibold shadow-md flex items-center justify-center gap-2 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-8 h-11 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[14px] font-semibold shadow-md flex items-center justify-center gap-2 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 shrink-0"
           >
             {isSubmitting ? (
               <>
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 <span>Confirming Appointment...</span>
               </>
             ) : (
               <>
                 <span>Confirm Booking (₱{service.price.toLocaleString()})</span>
-                <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
               </>
             )}
           </button>

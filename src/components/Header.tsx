@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="fixed top-0 w-full z-50 bg-[#f9f9ff]/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-[env(safe-area-inset-top,0px)]">
-      <div className="h-16 px-4 flex items-center justify-between gap-2 max-w-2xl mx-auto">
+      <div className="h-16 px-4 lg:px-8 max-w-7xl mx-auto flex items-center justify-between gap-2 w-full">
         {/* Left: Back button OR Logo & Title */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {canGoBack && onGoBack ? (
@@ -98,11 +98,11 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 min-w-0 group text-left cursor-pointer"
             title="Switch portal view"
           >
-            <img
-              src={ASSETS.logo}
-              alt="Scheduly Logo"
-              className="h-8 w-auto object-contain shrink-0 drop-shadow-xs"
-            />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#3525cd] to-[#4f46e5] flex items-center justify-center text-white shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-[19px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                event_available
+              </span>
+            </div>
             {appMode === 'admin' ? (
               <div className="flex items-center gap-1">
                 <span className="bg-[#3525cd]/10 text-[#3525cd] text-[11px] font-bold px-2 py-0.5 rounded uppercase tracking-wider whitespace-nowrap">
@@ -131,6 +131,175 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
         </div>
+
+        {/* Center Desktop Navigation Tabs (visible on >= 1024px) */}
+        <nav className="hidden lg:flex items-center gap-1 mx-2">
+          {appMode === 'client' && (
+            <>
+              <button
+                onClick={() => setClientTab('home')}
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  clientTab === 'home'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Home
+              </button>
+              <button
+                onClick={() => setClientTab('explore')}
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  clientTab === 'explore'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Explore
+              </button>
+              <button
+                onClick={() => setClientTab('bookings')}
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer relative flex items-center gap-1.5 ${
+                  clientTab === 'bookings'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                <span>Bookings</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${clientTab === 'bookings' ? 'bg-white' : 'bg-[#3525cd]'}`}></span>
+              </button>
+              <button
+                onClick={() => setClientTab('favorites')}
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  clientTab === 'favorites'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Favorites
+              </button>
+            </>
+          )}
+
+          {appMode === 'business' && (
+            <>
+              <button
+                onClick={() => setBusinessTab('overview')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  businessTab === 'overview'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setBusinessTab('calendar')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  businessTab === 'calendar'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Calendar
+              </button>
+              <button
+                onClick={() => setBusinessTab('bookings')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  businessTab === 'bookings'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Bookings
+              </button>
+              <button
+                onClick={() => setBusinessTab('clients')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  businessTab === 'clients'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Clients
+              </button>
+              <button
+                onClick={() => setBusinessTab('services')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  businessTab === 'services'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Services
+              </button>
+              <button
+                onClick={() => setBusinessTab('analytics')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  businessTab === 'analytics'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Analytics
+              </button>
+            </>
+          )}
+
+          {appMode === 'admin' && (
+            <>
+              <button
+                onClick={() => setAdminTab('overview')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  adminTab === 'overview'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Pulse
+              </button>
+              <button
+                onClick={() => setAdminTab('businesses')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  adminTab === 'businesses'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                KYC
+              </button>
+              <button
+                onClick={() => setAdminTab('users')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  adminTab === 'users'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Users
+              </button>
+              <button
+                onClick={() => setAdminTab('reports')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  adminTab === 'reports'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Moderation
+              </button>
+              <button
+                onClick={() => setAdminTab('settings')}
+                className={`px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer ${
+                  adminTab === 'settings'
+                    ? 'bg-[#3525cd] text-white shadow-xs'
+                    : 'text-[#464555] hover:text-[#141b2b] hover:bg-[#e9edff]'
+                }`}
+              >
+                Settings
+              </button>
+            </>
+          )}
+        </nav>
 
         {/* Right actions */}
         <div className="flex items-center gap-1 shrink-0">

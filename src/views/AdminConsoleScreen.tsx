@@ -535,12 +535,12 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full pb-28 max-w-2xl mx-auto">
+    <div className="flex flex-col w-full pb-28 lg:pb-8 max-w-7xl mx-auto lg:px-6">
       {/* ========================================================================= */}
       {/* TAB 1: OVERVIEW (PLATFORM PULSE) - EXACT MATCH TO PROVIDED SCREENSHOT */}
       {/* ========================================================================= */}
       {adminTab === 'overview' && (
-        <div className="flex flex-col w-full px-4 pt-4 pb-4 space-y-4">
+        <div className="flex flex-col w-full px-4 lg:px-0 pt-4 pb-4 space-y-4">
           {/* Platform System Live Status Bar */}
           <div className="w-full bg-white p-2.5 rounded-xl shadow-xs flex items-center justify-between border border-[#e9edff]">
             <div className="flex items-center space-x-2.5 min-w-0">
@@ -650,8 +650,8 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
             </button>
           </div>
 
-          {/* 2x2 Top Level Metric Cards */}
-          <div className="grid grid-cols-2 gap-2.5">
+          {/* 2x2 Top Level Metric Cards (4 cols on laptop) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
             {/* Card 1: Total GMV */}
             <div className="bg-white p-4 rounded-xl shadow-xs border border-[#e9edff] flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1">
@@ -737,8 +737,10 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
             </div>
           </div>
 
-          {/* Booking Velocity SVG Chart Tile */}
-          <div className="bg-white p-4 rounded-xl shadow-xs border border-[#e9edff] flex flex-col space-y-2">
+          {/* Charts Grid: 2 Columns on Laptop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Booking Velocity SVG Chart Tile */}
+            <div className="bg-white p-4 rounded-xl shadow-xs border border-[#e9edff] flex flex-col space-y-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[14px] font-semibold text-[#141b2b]">Bookings Velocity</p>
@@ -864,6 +866,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
               </div>
             </div>
           </div>
+        </div>
 
           {/* Recent Platform Activity Feed */}
           <div className="bg-white p-4 rounded-xl shadow-xs border border-[#e9edff] flex flex-col space-y-3">
@@ -944,7 +947,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
           </div>
 
           {/* Pending Applications List */}
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {kycList.map(item => (
               <div
                 key={item.id}
@@ -1221,7 +1224,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
           </div>
 
           {/* User Card Feed */}
-          <div className="px-4 flex flex-col gap-3 pb-4" id="users-card-list">
+          <div className="px-4 lg:px-0 grid grid-cols-1 md:grid-cols-2 gap-4 pb-4" id="users-card-list">
             {filteredUsers.map(user => {
               const isFlagged = user.role === 'flagged';
               return (
@@ -1810,7 +1813,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
           </div>
 
           {/* Ticket Feed Container */}
-          <div className="flex flex-col gap-3.5" id="tickets-container">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" id="tickets-container">
             {filteredTickets.map(ticket => (
               <article
                 key={ticket.id}
@@ -2070,7 +2073,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
       {/* TAB 5: SETTINGS (PLATFORM SYSTEM CONFIG) - EXACT MATCH TO PROVIDED DESIGN */}
       {/* ========================================================================= */}
       {adminTab === 'settings' && (
-        <div className="flex flex-col w-full px-4 pt-2 pb-8 space-y-4">
+        <div className="flex flex-col w-full px-4 lg:px-0 pt-2 pb-8 space-y-4">
           {/* Header Context Badge & Visual Status Pill */}
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-2">
@@ -2123,8 +2126,10 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
             </div>
           </div>
 
-          {/* SECTION 1: Platform Global Config */}
-          <div className="flex flex-col space-y-1.5">
+          {/* Settings Sections Grid: 2 Columns on Laptop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* SECTION 1: Platform Global Config */}
+            <div className="flex flex-col space-y-1.5">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[18px] text-[#3525cd]">payments</span>
@@ -2508,6 +2513,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
               </div>
             </div>
           </div>
+        </div>
 
           {/* SECTION 5: Visual Brand/Platform Trust Banner */}
           <div className="rounded-xl overflow-hidden shadow-xs relative p-4 bg-[#e9edff] flex items-center justify-between border border-[#dce2f7]">
@@ -2899,7 +2905,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
       {/* Document Inspector Modal Simulation */}
       {selectedInspection && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white rounded-3xl p-5 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95 duration-150">
+          <div className="w-full max-w-md bg-white rounded-3xl p-5 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#e9edff] pb-3">
               <div>
                 <h3 className="text-[17px] font-bold text-[#141b2b]">{selectedInspection.name}</h3>

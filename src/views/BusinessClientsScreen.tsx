@@ -15,6 +15,14 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
   const [selectedClient, setSelectedClient] = useState<ClientProfile | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
 
+  // Add Client Modal
+  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('+63 9');
+  const [formEmail, setFormEmail] = useState('');
+  const [formTier, setFormTier] = useState<'VIP' | 'Regular' | 'New Client'>('New Client');
+  const [formNotes, setFormNotes] = useState('');
+
   const filtered = clients.filter(c => {
     const matchesSearch =
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -25,6 +33,10 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
     if (tierFilter === 'all') return true;
     return c.tier === tierFilter;
   });
+
+  const vipCount = clients.filter(c => c.tier === 'VIP').length;
+  const newCount = clients.filter(c => c.tier === 'New Client').length;
+  const regularCount = clients.filter(c => c.tier === 'Regular').length;
 
   const handleAddConsultationNote = () => {
     if (!newNoteText.trim() || !selectedClient) return;
@@ -38,129 +50,165 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
     onTriggerToast('Consultation note appended to client CRM! 📝', 'note_add');
   };
 
+  const handleCreateClient = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName.trim()) {
+      onTriggerToast('Please enter client name', 'error');
+      return;
+    }
+
+    const newClientObj: ClientProfile = {
+      id: `client-${Date.now()}`,
+      name: formName.trim(),
+      phone: formPhone.trim() || '+63 900 000 0000',
+      email: formEmail.trim() || `${formName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+      tier: formTier,
+      totalSpent: formTier === 'VIP' ? 8500 : 0,
+      visits: formTier === 'VIP' ? 6 : 1,
+      lastVisit: 'New Registration',
+      clientNotes: formNotes.trim() ? `• ${formNotes.trim()}` : '• Newly registered client.',
+      preferredStylist: 'Jamie Lim',
+      punctualityRate: '100%'
+    };
+
+    setClients([newClientObj, ...clients]);
+    setIsAddClientModalOpen(false);
+    setFormName('');
+    setFormEmail('');
+    setFormNotes('');
+    onTriggerToast(`Added ${newClientObj.name} to Studio Bloom CRM! 👤`, 'person_add');
+  };
+
   return (
-    <div className="flex flex-col w-full pb-28 max-w-2xl mx-auto">
+    <div className="flex flex-col w-full pb-28 lg:pb-8 max-w-7xl mx-auto px-4 lg:px-8">
       {/* Top CRM Pulse Header */}
-      <section className="px-4 pt-4 pb-2">
-        <div className="p-4 rounded-2xl bg-white shadow-xs border border-[#e9edff] flex items-center justify-between">
+      <section className="pt-4 pb-2">
+        <div className="p-4 rounded-2xl bg-white shadow-xs border border-[#e9edff] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <span className="text-[11px] font-bold text-[#3525cd] uppercase tracking-wider">
               Studio Bloom CRM
             </span>
             <h1 className="text-[20px] font-bold text-[#141b2b] font-display">Client Directory</h1>
           </div>
-          <div className="flex items-center gap-3 text-right">
-            <div>
-              <span className="text-[16px] font-bold text-[#141b2b] font-display">412</span>
-              <span className="text-[10px] text-[#777587] block uppercase font-semibold">Total</span>
+
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            <div className="flex items-center gap-3 text-right">
+              <div>
+                <span className="text-[16px] font-bold text-[#141b2b] font-display">{clients.length}</span>
+                <span className="text-[10px] text-[#777587] block uppercase font-semibold">Total</span>
+              </div>
+              <div className="w-[1px] h-6 bg-[#dee2ef]"></div>
+              <div>
+                <span className="text-[16px] font-bold text-[#3525cd] font-display">{vipCount}</span>
+                <span className="text-[10px] text-[#777587] block uppercase font-semibold">VIPs</span>
+              </div>
+              <div className="w-[1px] h-6 bg-[#dee2ef]"></div>
+              <div>
+                <span className="text-[16px] font-bold text-[#00702f] font-display">+{newCount}</span>
+                <span className="text-[10px] text-[#777587] block uppercase font-semibold">New</span>
+              </div>
             </div>
-            <div className="w-[1px] h-6 bg-[#dee2ef]"></div>
-            <div>
-              <span className="text-[16px] font-bold text-[#3525cd] font-display">38</span>
-              <span className="text-[10px] text-[#777587] block uppercase font-semibold">VIPs</span>
-            </div>
-            <div className="w-[1px] h-6 bg-[#dee2ef]"></div>
-            <div>
-              <span className="text-[16px] font-bold text-[#00702f] font-display">+14</span>
-              <span className="text-[10px] text-[#777587] block uppercase font-semibold">New</span>
-            </div>
+
+            <button
+              onClick={() => setIsAddClientModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[12px] font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">person_add</span>
+              <span className="hidden sm:inline">Add Client</span>
+            </button>
           </div>
         </div>
       </section>
 
       {/* Search & Tier Filter Bar */}
-      <section className="sticky top-16 z-30 px-4 py-2 bg-[#f9f9ff]/95 backdrop-blur-md border-b border-[#e9edff]">
-        <div className="flex items-center gap-2 px-3 h-11 rounded-xl bg-white border border-[#e9edff] shadow-xs">
-          <span className="material-symbols-outlined text-[#777587] text-[20px]">search</span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search by client name, phone or formula..."
-            className="w-full bg-transparent text-[13px] text-[#141b2b] placeholder:text-[#777587] focus:outline-none"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="text-[#777587]">
-              <span className="material-symbols-outlined text-[16px]">close</span>
-            </button>
-          )}
+      <section className="sticky top-16 z-30 py-2.5 bg-[#f9f9ff]/95 backdrop-blur-md border-b border-[#e9edff]">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center gap-2 px-3 h-11 rounded-xl bg-white border border-[#e9edff] shadow-xs">
+            <span className="material-symbols-outlined text-[#777587] text-[20px]">search</span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by client name, phone or formula..."
+              className="w-full bg-transparent text-[13px] text-[#141b2b] placeholder:text-[#777587] focus:outline-none"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="text-[#777587] cursor-pointer">
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-2">
           <button
             onClick={() => setTierFilter('all')}
-            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all cursor-pointer ${
               tierFilter === 'all'
                 ? 'bg-[#3525cd] text-white shadow-xs'
                 : 'bg-white text-[#464555] border border-[#e9edff]'
             }`}
           >
-            All (412)
+            All ({clients.length})
           </button>
           <button
             onClick={() => setTierFilter('VIP')}
-            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all cursor-pointer ${
               tierFilter === 'VIP'
                 ? 'bg-[#3525cd] text-white shadow-xs'
                 : 'bg-white text-[#464555] border border-[#e9edff]'
             }`}
           >
-            VIP (38)
+            VIP ({vipCount})
           </button>
           <button
             onClick={() => setTierFilter('Regular')}
-            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all cursor-pointer ${
               tierFilter === 'Regular'
                 ? 'bg-[#3525cd] text-white shadow-xs'
                 : 'bg-white text-[#464555] border border-[#e9edff]'
             }`}
           >
-            Regular (264)
+            Regular ({regularCount})
           </button>
           <button
             onClick={() => setTierFilter('New Client')}
-            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all cursor-pointer ${
               tierFilter === 'New Client'
                 ? 'bg-[#3525cd] text-white shadow-xs'
                 : 'bg-white text-[#464555] border border-[#e9edff]'
             }`}
           >
-            New (110)
+            New ({newCount})
           </button>
         </div>
       </section>
 
-      {/* Client List Stream */}
-      <section className="px-4 pt-3 flex flex-col gap-3">
+      {/* Client List Grid */}
+      <section className="pt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(client => (
           <div
             key={client.id}
             onClick={() => setSelectedClient(client)}
-            className="p-4 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex flex-col gap-3 hover:border-[#3525cd] transition-all cursor-pointer"
+            className="p-4 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex flex-col justify-between gap-3 hover:border-[#3525cd] transition-all cursor-pointer group"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                {client.avatar ? (
-                  <img
-                    src={client.avatar}
-                    alt={client.name}
-                    className="w-12 h-12 rounded-full object-cover ring-2 ring-[#3525cd]/15"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-[#dee2ef] flex items-center justify-center font-bold text-[#3525cd] text-[15px]">
-                    {client.initials}
-                  </div>
-                )}
+                <div className="w-11 h-11 rounded-full bg-[#e1e8fd] text-[#3525cd] flex items-center justify-center font-bold text-[15px] shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                  {client.name.charAt(0)}
+                </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-[16px] font-bold text-[#141b2b]">{client.name}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-[15px] font-bold text-[#141b2b] group-hover:text-[#3525cd] transition-colors">
+                      {client.name}
+                    </h3>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         client.tier === 'VIP'
                           ? 'bg-[#dee2ef] text-[#3525cd]'
                           : client.tier === 'New Client'
                           ? 'bg-[#7ffc97] text-[#002109]'
-                          : 'bg-[#e9edff] text-[#464555]'
+                          : 'bg-[#f1f3ff] text-[#464555]'
                       }`}
                     >
                       {client.tier}
@@ -170,79 +218,162 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
                 </div>
               </div>
 
-              <div className="text-right">
-                <span className="text-[11px] text-[#777587]">Lifetime Spend</span>
-                <div className="text-[16px] font-bold text-[#141b2b] font-display">
-                  ₱{client.totalSpent.toLocaleString()}
-                </div>
-              </div>
+              <span className="material-symbols-outlined text-[20px] text-[#777587] group-hover:text-[#3525cd]">
+                chevron_right
+              </span>
             </div>
 
-            {/* Visit Frequency & Formula Bar */}
-            <div className="p-2.5 rounded-xl bg-[#f1f3ff] text-[12px] flex items-center justify-between text-[#464555]">
+            <div className="grid grid-cols-3 gap-1 py-2 px-3 rounded-xl bg-[#f1f3ff] text-[11px]">
               <div>
-                <span>{client.visits} visits</span> • <span>Last: {client.lastVisit}</span>
+                <span className="text-[#777587] block">Visits</span>
+                <strong className="text-[#141b2b] text-[13px]">{client.visits}</strong>
               </div>
-              {client.preferredStylist && (
-                <span className="font-semibold text-[#3525cd]">
-                  Stylist: {client.preferredStylist.split(' ')[0]}
-                </span>
-              )}
+              <div>
+                <span className="text-[#777587] block">Spent</span>
+                <strong className="text-[#3525cd] text-[13px]">₱{client.totalSpent.toLocaleString()}</strong>
+              </div>
+              <div>
+                <span className="text-[#777587] block">Punctuality</span>
+                <strong className="text-[#00702f] text-[13px]">{client.punctualityRate || '100%'}</strong>
+              </div>
             </div>
 
-            {/* Hair Formula or Client Notes preview */}
             {client.formulaNote && (
-              <div className="text-[11px] font-mono bg-[#e9edff] text-[#3525cd] p-2 rounded-lg flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[14px]">science</span>
-                <span className="truncate">{client.formulaNote}</span>
+              <div className="text-[11px] text-[#3525cd] bg-[#e9edff] px-2.5 py-1 rounded-lg truncate flex items-center gap-1 font-mono">
+                <span className="material-symbols-outlined text-[13px]">science</span>
+                <span>{client.formulaNote}</span>
               </div>
             )}
-            {client.clientNotes && !client.formulaNote && (
-              <p className="text-[12px] text-[#464555] line-clamp-1 italic">
-                "{client.clientNotes}"
-              </p>
-            )}
-
-            {/* Bottom micro-row */}
-            <div className="flex items-center justify-between pt-1 border-t border-[#f1f3ff] text-[12px]">
-              <span className="text-[#00702f] font-semibold flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px]">event</span>
-                {client.nextAppointment || 'No upcoming booking'}
-              </span>
-              <span className="text-[#3525cd] font-semibold flex items-center gap-0.5">
-                <span>View Details</span>
-                <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-              </span>
-            </div>
           </div>
         ))}
       </section>
 
-      {/* Client Detail Full Slide-Up Drawer / Modal */}
+      {/* ================= MODAL: ADD CLIENT ================= */}
+      {isAddClientModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-3xl p-5 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-[#e9edff] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#3525cd] text-[22px]">person_add</span>
+                <h3 className="text-[16px] font-bold text-[#141b2b]">Add New Client</h3>
+              </div>
+              <button
+                onClick={() => setIsAddClientModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-[#f1f3ff] flex items-center justify-center text-[#464555] hover:text-[#141b2b] cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateClient} className="flex flex-col gap-3">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  placeholder="e.g. Bianca Tan"
+                  className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[13px] text-[#141b2b] focus:outline-none focus:border-[#3525cd]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                    Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={formPhone}
+                    onChange={(e) => setFormPhone(e.target.value)}
+                    placeholder="+63 917..."
+                    className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[13px] text-[#141b2b] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                    Category Tier
+                  </label>
+                  <select
+                    value={formTier}
+                    onChange={(e) => setFormTier(e.target.value as any)}
+                    className="w-full mt-1 px-2 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[12px] text-[#141b2b] focus:outline-none"
+                  >
+                    <option value="New Client">New Client</option>
+                    <option value="Regular">Regular</option>
+                    <option value="VIP">VIP</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  placeholder="bianca@example.com"
+                  className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[13px] text-[#141b2b] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                  Initial Notes / Hair Preferences
+                </label>
+                <textarea
+                  rows={2}
+                  value={formNotes}
+                  onChange={(e) => setFormNotes(e.target.value)}
+                  placeholder="Prefers natural tone balayage, allergic to ammonia..."
+                  className="w-full mt-1 p-2.5 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[13px] text-[#141b2b] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-3 border-t border-[#e9edff]">
+                <button
+                  type="button"
+                  onClick={() => setIsAddClientModalOpen(false)}
+                  className="py-2.5 px-4 rounded-xl bg-[#e9edff] text-[#464555] text-[13px] font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[13px] font-semibold shadow-xs cursor-pointer"
+                >
+                  Save to Directory
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= CLIENT DETAILS SIDE DRAWER / MODAL ================= */}
       {selectedClient && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col gap-4 animate-in slide-in-from-bottom duration-200">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white rounded-3xl p-5 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+            {/* Drawer Header */}
             <div className="flex items-center justify-between border-b border-[#e9edff] pb-3">
               <div className="flex items-center gap-3">
-                {selectedClient.avatar ? (
-                  <img
-                    src={selectedClient.avatar}
-                    alt={selectedClient.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-[#dee2ef] flex items-center justify-center font-bold text-[#3525cd]">
-                    {selectedClient.initials}
-                  </div>
-                )}
+                <div className="w-12 h-12 rounded-full bg-[#e1e8fd] text-[#3525cd] flex items-center justify-center font-bold text-[18px]">
+                  {selectedClient.name.charAt(0)}
+                </div>
                 <div>
-                  <h2 className="text-[18px] font-bold text-[#141b2b]">{selectedClient.name}</h2>
+                  <h3 className="text-[17px] font-bold text-[#141b2b]">{selectedClient.name}</h3>
                   <p className="text-[12px] text-[#464555]">{selectedClient.phone}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedClient(null)}
-                className="w-9 h-9 rounded-full bg-[#e9edff] flex items-center justify-center text-[#141b2b]"
+                className="w-9 h-9 rounded-full bg-[#e9edff] flex items-center justify-center text-[#141b2b] cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
@@ -262,7 +393,7 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
               </div>
               <div className="p-2.5 rounded-xl bg-[#f1f3ff] text-center">
                 <span className="text-[11px] text-[#777587]">Tier</span>
-                <div className="text-[14px] font-bold text-[#00702f]">{selectedClient.tier}</div>
+                <div className="text-[13px] font-bold text-[#00702f]">{selectedClient.tier}</div>
               </div>
             </div>
 
@@ -271,7 +402,7 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
               <div className="p-3 rounded-xl bg-[#e9edff] flex flex-col gap-1">
                 <span className="text-[11px] font-bold text-[#3525cd] uppercase tracking-wider flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">science</span>
-                  Hair Color Formula History
+                  Formula &amp; Technical Notes
                 </span>
                 <p className="text-[13px] font-mono text-[#141b2b] font-medium">
                   {selectedClient.formulaNote}
@@ -280,16 +411,20 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
             )}
 
             {/* Client Notes & Consultations */}
-            <div className="flex flex-col gap-2">
-              <span className="text-[13px] font-bold text-[#141b2b]">Stylist Consultation Notes</span>
-              <div className="p-3 rounded-xl bg-[#f1f3ff] text-[13px] text-[#464555] whitespace-pre-line leading-relaxed max-h-36 overflow-y-auto">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[12px] font-bold text-[#141b2b] uppercase tracking-wider">
+                Stylist Consultation History
+              </span>
+              <div className="p-3 rounded-xl bg-[#f1f3ff] text-[13px] text-[#464555] whitespace-pre-line leading-relaxed max-h-36 overflow-y-auto border border-[#e9edff]">
                 {selectedClient.clientNotes}
               </div>
             </div>
 
             {/* Add Note Input */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[12px] font-semibold text-[#141b2b]">Add new session note</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold text-[#464555] uppercase tracking-wider">
+                Add Consultation Note
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -300,9 +435,9 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
                 />
                 <button
                   onClick={handleAddConsultationNote}
-                  className="px-4 py-2 rounded-xl bg-[#3525cd] text-white text-[13px] font-semibold hover:bg-[#4f46e5]"
+                  className="px-4 py-2 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[13px] font-semibold cursor-pointer"
                 >
-                  Save
+                  Save Note
                 </button>
               </div>
             </div>
@@ -310,18 +445,21 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
             {/* Action Bar */}
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#e9edff]">
               <button
-                onClick={() => onTriggerToast(`Calling ${selectedClient.name} at ${selectedClient.phone}...`, 'call')}
-                className="py-2.5 rounded-xl bg-[#f1f3ff] text-[#141b2b] text-[13px] font-bold flex items-center justify-center gap-1.5 hover:bg-[#e9edff]"
+                onClick={() => {
+                  navigator.clipboard?.writeText(selectedClient.phone);
+                  onTriggerToast(`Copied phone: ${selectedClient.phone} 📞`, 'call');
+                }}
+                className="py-2.5 rounded-xl bg-[#f1f3ff] hover:bg-[#e9edff] text-[#141b2b] text-[13px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px] text-[#3525cd]">call</span>
                 <span>Call Client</span>
               </button>
               <button
-                onClick={() => onTriggerToast(`Opening WhatsApp chat with ${selectedClient.name}...`, 'chat')}
-                className="py-2.5 rounded-xl bg-[#e9edff] text-[#3525cd] text-[13px] font-bold flex items-center justify-center gap-1.5 hover:bg-[#dce2f7]"
+                onClick={() => onTriggerToast(`Sent appointment reminder to ${selectedClient.name}! 💬`, 'chat')}
+                className="py-2.5 rounded-xl bg-[#e9edff] hover:bg-[#dce2f7] text-[#3525cd] text-[13px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">chat</span>
-                <span>Send WhatsApp</span>
+                <span>Send SMS / WhatsApp</span>
               </button>
             </div>
           </div>

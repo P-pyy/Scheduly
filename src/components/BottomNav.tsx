@@ -23,8 +23,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onOpenMoreMenu
 }) => {
   return (
-    <nav className="fixed bottom-0 w-full z-40 pb-[env(safe-area-inset-bottom,0px)] bg-[#ffffff]/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)] border-t border-[#e9edff]">
-      <div className="h-16 px-2 flex items-center justify-around max-w-2xl mx-auto">
+    <nav className="lg:hidden fixed bottom-0 w-full z-40 pb-[env(safe-area-inset-bottom,0px)] bg-[#ffffff]/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)] border-t border-[#e9edff]">
+      <div className="h-16 px-2 max-w-2xl mx-auto flex items-center justify-around w-full">
         {/* CLIENT TABS */}
         {appMode === 'client' && (
           <>

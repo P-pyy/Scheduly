@@ -64,9 +64,9 @@ export const ServicesManagementScreen: React.FC<ServicesManagementScreenProps> =
   const totalRevenue = services.reduce((acc, s) => acc + s.grossRevenue, 0);
 
   return (
-    <div className="flex flex-col w-full pb-28 max-w-2xl mx-auto">
+    <div className="flex flex-col w-full pb-28 lg:pb-8 max-w-7xl mx-auto lg:px-6">
       {/* Public Booking Link Banner */}
-      <section className="px-4 pt-4 pb-2">
+      <section className="px-4 lg:px-0 pt-4 pb-2">
         <div className="p-4 rounded-2xl bg-[#3525cd] text-white shadow-md flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export const ServicesManagementScreen: React.FC<ServicesManagementScreenProps> =
       </section>
 
       {/* Services Stats & Add Button Header */}
-      <section className="px-4 pt-2">
+      <section className="px-4 lg:px-0 pt-2">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[18px] font-bold text-[#141b2b] font-display">Manage Services</h1>
@@ -143,7 +143,7 @@ export const ServicesManagementScreen: React.FC<ServicesManagementScreenProps> =
       </section>
 
       {/* Services List Stream */}
-      <section className="px-4 pt-3 flex flex-col gap-3">
+      <section className="px-4 lg:px-0 pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map(srv => (
           <div
             key={srv.id}

@@ -32,10 +32,38 @@ export const BusinessBookingsScreen: React.FC<BusinessBookingsScreenProps> = ({
     return b.status === statusFilter;
   });
 
+  const handleExportCSV = () => {
+    const headers = ['Booking Number', 'Client Name', 'Phone', 'Service', 'Stylist', 'Date', 'Time', 'Duration', 'Fee', 'Status', 'Payment'];
+    const rows = bookings.map(b => [
+      b.bookingNumber,
+      `"${b.clientName}"`,
+      `"${b.clientPhone}"`,
+      `"${b.serviceTitle}"`,
+      `"${b.stylistName}"`,
+      `"${b.date}"`,
+      `"${b.time}"`,
+      `"${b.duration}"`,
+      b.fee,
+      b.status,
+      `"${b.paymentStatus}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `studio-bloom-bookings-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    onTriggerToast('Exported booking records to CSV file! 📊', 'download');
+  };
+
   return (
-    <div className="flex flex-col w-full pb-28 max-w-2xl mx-auto">
+    <div className="flex flex-col w-full pb-28 lg:pb-8 max-w-7xl mx-auto lg:px-6">
       {/* Search & Week Selector Bar */}
-      <section className="sticky top-16 z-30 px-4 py-2 bg-[#f9f9ff]/95 backdrop-blur-md border-b border-[#e9edff]">
+      <section className="sticky top-16 z-30 px-4 lg:px-0 py-2 bg-[#f9f9ff]/95 backdrop-blur-md border-b border-[#e9edff]">
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center gap-2 px-3 h-11 rounded-xl bg-white border border-[#e9edff] shadow-xs">
             <span className="material-symbols-outlined text-[#777587] text-[20px]">search</span>
@@ -54,8 +82,17 @@ export const BusinessBookingsScreen: React.FC<BusinessBookingsScreenProps> = ({
           </div>
 
           <button
-            onClick={() => onTriggerToast('Exporting booking records to CSV file... 📊', 'download')}
-            className="w-11 h-11 rounded-xl bg-white border border-[#e9edff] flex items-center justify-center text-[#464555] hover:text-[#3525cd] shadow-xs cursor-pointer"
+            onClick={onAddBooking}
+            className="h-11 px-3.5 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white flex items-center gap-1.5 text-[12px] font-semibold shadow-xs cursor-pointer transition-all active:scale-95"
+            title="Add New Appointment"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            <span className="hidden sm:inline">Add Booking</span>
+          </button>
+
+          <button
+            onClick={handleExportCSV}
+            className="w-11 h-11 rounded-xl bg-white border border-[#e9edff] flex items-center justify-center text-[#464555] hover:text-[#3525cd] shadow-xs cursor-pointer transition-colors"
             title="Export CSV"
           >
             <span className="material-symbols-outlined text-[20px]">download</span>
@@ -108,7 +145,7 @@ export const BusinessBookingsScreen: React.FC<BusinessBookingsScreenProps> = ({
       </section>
 
       {/* Bookings Card List */}
-      <section className="px-4 pt-3 flex flex-col gap-3">
+      <section className="px-4 lg:px-0 pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map(b => (
           <div
             key={b.id}

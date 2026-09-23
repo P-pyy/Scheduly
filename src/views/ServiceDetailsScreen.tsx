@@ -27,7 +27,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full pb-32 max-w-2xl mx-auto">
+    <div className="flex flex-col w-full pb-28 lg:pb-16 max-w-6xl mx-auto lg:px-6">
       {/* Interactive Top Action Row */}
       <div className="px-4 pt-3 pb-2 flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e1e8fd] text-[#141b2b] text-[12px] font-semibold">
@@ -241,7 +241,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
             <span className="text-[11px] font-semibold text-[#464555]">2 services</span>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {popularHaircuts.map(srv => {
               const isSelected = selectedServiceId === srv.id;
               return (
@@ -314,7 +314,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
             <span className="text-[11px] font-semibold text-[#464555]">2 services</span>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {colorTreatments.map(srv => {
               const isSelected = selectedServiceId === srv.id;
               return (
@@ -380,7 +380,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
             <span className="text-[11px] font-semibold text-[#464555]">1 service</span>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {nailTreatments.map(srv => {
               const isSelected = selectedServiceId === srv.id;
               return (
@@ -451,20 +451,20 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
       </div>
 
       {/* Sticky Bottom Summary Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl shadow-[0_-8px_24px_rgba(20,27,43,0.08)] px-4 py-3 pb-[env(safe-area-inset-bottom,12px)] border-t border-[#e9edff]">
-        <div className="max-w-md mx-auto flex flex-col gap-2">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl shadow-[0_-8px_24px_rgba(20,27,43,0.08)] px-4 py-2.5 pb-[env(safe-area-inset-bottom,10px)] border-t border-[#e9edff]">
+        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
           {/* Quick Detail Summary */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between sm:justify-start gap-3 min-w-0">
             <div className="flex items-center gap-2 min-w-0">
               <span className="w-2 h-2 rounded-full bg-[#3525cd] animate-pulse shrink-0"></span>
               <p className="text-[13px] text-[#141b2b] truncate">
-                1 service selected:{' '}
+                Selected:{' '}
                 <span className="font-semibold text-[#3525cd]">
-                  {selectedService.title} (₱{selectedService.price.toLocaleString()})
+                  {selectedService.title}
                 </span>
               </p>
             </div>
-            <span className="text-[20px] font-bold text-[#141b2b] font-display shrink-0">
+            <span className="text-[18px] font-bold text-[#141b2b] font-display shrink-0">
               ₱{selectedService.price.toLocaleString()}
             </span>
           </div>
@@ -472,10 +472,10 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
           {/* Primary CTA */}
           <button
             onClick={() => onContinueToSlots(selectedService)}
-            className="w-full h-12 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[15px] font-semibold shadow-md flex items-center justify-center gap-2 active:scale-[0.99] transition-all cursor-pointer"
+            className="w-full sm:w-auto px-6 h-10 sm:h-11 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[14px] font-semibold shadow-md flex items-center justify-center gap-2 active:scale-[0.99] transition-all cursor-pointer shrink-0"
           >
             <span>Continue to Date &amp; Time</span>
-            <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
           </button>
         </div>
       </div>

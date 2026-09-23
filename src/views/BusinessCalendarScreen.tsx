@@ -31,9 +31,9 @@ export const BusinessCalendarScreen: React.FC<BusinessCalendarScreenProps> = ({
   ];
 
   return (
-    <div className="flex flex-col w-full pb-32 max-w-2xl mx-auto">
+    <div className="flex flex-col w-full pb-32 lg:pb-8 max-w-7xl mx-auto lg:px-6">
       {/* Date Header & View Switcher */}
-      <section className="sticky top-16 z-30 px-4 py-2.5 bg-[#f9f9ff]/95 backdrop-blur-md border-b border-[#e9edff]">
+      <section className="sticky top-16 z-30 px-4 lg:px-0 py-2.5 bg-[#f9f9ff]/95 backdrop-blur-md border-b border-[#e9edff]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div>
@@ -109,7 +109,7 @@ export const BusinessCalendarScreen: React.FC<BusinessCalendarScreenProps> = ({
       </section>
 
       {/* Visual Day Schedule Timeline with Current Time Indicator */}
-      <section className="px-4 pt-4 relative">
+      <section className="px-4 lg:px-0 pt-4 relative">
         {/* Timeline hour rows */}
         <div className="relative border-l border-[#dee2ef] ml-16 flex flex-col gap-12 py-2">
           {/* Current Time Indicator line at 10:20 AM */}

@@ -21,9 +21,9 @@ export const BusinessAnalyticsScreen: React.FC<BusinessAnalyticsScreenProps> = (
   ];
 
   return (
-    <div className="flex flex-col w-full pb-28 max-w-2xl mx-auto">
+    <div className="flex flex-col w-full pb-28 lg:pb-8 max-w-7xl mx-auto lg:px-6">
       {/* Analytics Header & Range Selector */}
-      <section className="px-4 pt-4 pb-2">
+      <section className="px-4 lg:px-0 pt-4 pb-2">
         <div className="p-4 rounded-2xl bg-white shadow-xs border border-[#e9edff] flex items-center justify-between">
           <div>
             <span className="text-[11px] font-bold text-[#3525cd] uppercase tracking-wider">
@@ -40,7 +40,7 @@ export const BusinessAnalyticsScreen: React.FC<BusinessAnalyticsScreenProps> = (
                   setPeriod(p);
                   onTriggerToast(`Updated analytics for ${p} range`, 'analytics');
                 }}
-                className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                   period === p ? 'bg-white text-[#3525cd] shadow-xs' : 'text-[#464555]'
                 }`}
               >
@@ -52,8 +52,8 @@ export const BusinessAnalyticsScreen: React.FC<BusinessAnalyticsScreenProps> = (
       </section>
 
       {/* KPI 4-Pack Cards */}
-      <section className="px-4 pt-2">
-        <div className="grid grid-cols-2 gap-3">
+      <section className="px-4 lg:px-0 pt-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="p-4 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex flex-col gap-1">
             <div className="flex items-center justify-between text-[#464555]">
               <span className="text-[12px] font-semibold">Gross Revenue</span>
@@ -92,50 +92,94 @@ export const BusinessAnalyticsScreen: React.FC<BusinessAnalyticsScreenProps> = (
         </div>
       </section>
 
-      {/* Revenue Velocity Chart */}
-      <section className="px-4 pt-4">
-        <div className="p-4 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-[15px] font-bold text-[#141b2b]">Revenue Velocity</h3>
-              <p className="text-[11px] text-[#464555]">Daily collection trajectory</p>
-            </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#7ffc97] text-[#002109] text-[11px] font-bold">
-              <span className="material-symbols-outlined text-[14px]">star</span>
-              <span>Saturday Peak: ₱24,150</span>
-            </div>
-          </div>
-
-          {/* Bar Diagram */}
-          <div className="h-36 flex items-end justify-between gap-2 pt-4">
-            {velocityPoints.map((v, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
-                <span className="text-[9px] font-bold text-[#464555]">
-                  ₱{(v.rev / 1000).toFixed(1)}k
-                </span>
-                <div className="w-full bg-[#f1f3ff] rounded-lg h-24 relative flex items-end overflow-hidden">
-                  <div
-                    style={{ height: `${v.height}%` }}
-                    className={`w-full rounded-t transition-all duration-500 ${
-                      v.peak ? 'bg-[#3525cd] shadow-md' : 'bg-[#3525cd]/45 hover:bg-[#3525cd]/70'
-                    }`}
-                  ></div>
-                </div>
-                <span className={`text-[11px] font-bold ${v.peak ? 'text-[#3525cd]' : 'text-[#777587]'}`}>
-                  {v.day}
-                </span>
+      {/* Analytics Content Grid: 2 Columns on Laptop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4 px-4 lg:px-0">
+        {/* Revenue Velocity Chart */}
+        <section className="flex flex-col">
+          <div className="p-4 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex flex-col gap-3 h-full">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-[15px] font-bold text-[#141b2b]">Revenue Velocity</h3>
+                <p className="text-[11px] text-[#464555]">Daily collection trajectory</p>
               </div>
-            ))}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#7ffc97] text-[#002109] text-[11px] font-bold">
+                <span className="material-symbols-outlined text-[14px]">star</span>
+                <span>Sat Peak: ₱24,150</span>
+              </div>
+            </div>
+
+            {/* Bar Diagram */}
+            <div className="h-44 flex items-end justify-between gap-2 pt-4">
+              {velocityPoints.map((v, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                  <span className="text-[9px] font-bold text-[#464555]">
+                    ₱{(v.rev / 1000).toFixed(1)}k
+                  </span>
+                  <div className="w-full bg-[#f1f3ff] rounded-lg h-32 relative flex items-end overflow-hidden">
+                    <div
+                      style={{ height: `${v.height}%` }}
+                      className={`w-full rounded-t transition-all duration-500 ${
+                        v.peak ? 'bg-[#3525cd] shadow-md' : 'bg-[#3525cd]/45 hover:bg-[#3525cd]/70'
+                      }`}
+                    ></div>
+                  </div>
+                  <span className={`text-[11px] font-bold ${v.peak ? 'text-[#3525cd]' : 'text-[#777587]'}`}>
+                    {v.day}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* Stylist Efficiency Leaderboard */}
+        <section className="flex flex-col">
+          <div className="p-4 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex flex-col gap-3 h-full">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[15px] font-bold text-[#141b2b]">Stylist Floor Efficiency</h3>
+              <span className="text-[11px] text-[#464555]">Ranked by contribution</span>
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              {INITIAL_STYLISTS.map(st => (
+                <div
+                  key={st.id}
+                  className="p-3 rounded-xl bg-[#f1f3ff] flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <img src={st.avatar} alt={st.name} className="w-10 h-10 rounded-full object-cover shadow-xs" />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-[13px] font-bold text-[#141b2b]">{st.name}</h4>
+                        {st.isTopEarner && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold">
+                            Top Earner
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-[#464555]">{st.apptsCount} completed appts</p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[14px] font-bold text-[#141b2b] font-display">
+                      ₱{st.earnings.toLocaleString()}
+                    </span>
+                    <span className="block text-[10px] text-[#00702f] font-semibold">{st.goalPercentage}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* Top Performing Services Progress List */}
-      <section className="px-4 pt-4">
+      <section className="px-4 lg:px-0 pt-4">
         <div className="p-4 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex flex-col gap-3">
           <h3 className="text-[15px] font-bold text-[#141b2b]">Top Revenue Drivers</h3>
 
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center justify-between text-[13px] mb-1">
                 <span className="font-bold text-[#141b2b]">Balayage &amp; Gloss Treatment</span>
@@ -179,47 +223,6 @@ export const BusinessAnalyticsScreen: React.FC<BusinessAnalyticsScreenProps> = (
               </div>
               <span className="text-[11px] text-[#464555] mt-0.5 block">54 bookings</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stylist Efficiency Leaderboard */}
-      <section className="px-4 pt-4">
-        <div className="p-4 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[15px] font-bold text-[#141b2b]">Stylist Floor Efficiency</h3>
-            <span className="text-[11px] text-[#464555]">Ranked by contribution</span>
-          </div>
-
-          <div className="flex flex-col gap-2.5">
-            {INITIAL_STYLISTS.map(st => (
-              <div
-                key={st.id}
-                className="p-3 rounded-xl bg-[#f1f3ff] flex items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-2.5">
-                  <img src={st.avatar} alt={st.name} className="w-10 h-10 rounded-full object-cover shadow-xs" />
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="text-[13px] font-bold text-[#141b2b]">{st.name}</h4>
-                      {st.isTopEarner && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold">
-                          Top Earner
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-[#464555]">{st.apptsCount} completed appts</p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <span className="text-[14px] font-bold text-[#141b2b] font-display">
-                    ₱{st.earnings.toLocaleString()}
-                  </span>
-                  <span className="block text-[10px] text-[#00702f] font-semibold">{st.goalPercentage}</span>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

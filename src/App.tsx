@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { AppMode, ClientTab, BusinessTab, AdminTab, Booking, SalonService, ToastMessage } from './types';
 import { INITIAL_BOOKINGS, INITIAL_SERVICES, ASSETS } from './data/mockData';
 import { Header } from './components/Header';
@@ -15,10 +16,11 @@ import { BusinessClientsScreen } from './views/BusinessClientsScreen';
 import { ServicesManagementScreen } from './views/ServicesManagementScreen';
 import { BusinessAnalyticsScreen } from './views/BusinessAnalyticsScreen';
 import { AdminConsoleScreen } from './views/AdminConsoleScreen';
+import { FavoritesScreen } from './views/FavoritesScreen';
 import { AuthModal } from './views/AuthModal';
 
 export function App() {
-  const [appMode, setAppMode] = useState<AppMode>('admin');
+  const [appMode, setAppMode] = useState<AppMode>('client');
   const [clientTab, setClientTab] = useState<ClientTab>('home');
   const [businessTab, setBusinessTab] = useState<BusinessTab>('overview');
   const [adminTab, setAdminTab] = useState<AdminTab>('settings');
@@ -55,10 +57,11 @@ export function App() {
   };
 
   const handleReschedule = (booking: Booking) => {
-    const serviceMatch = INITIAL_SERVICES.find(s => s.title === booking.serviceTitle) || INITIAL_SERVICES[0];
-    setSelectedService(serviceMatch);
-    setClientTab('booking-flow');
-    triggerToast(`Select new time slot for #${booking.bookingNumber}`, 'schedule');
+    setBookings(prev => prev.map(b => (b.id === booking.id ? booking : b)));
+  };
+
+  const handleAddCustomBooking = (newBooking: Booking) => {
+    setBookings(prev => [newBooking, ...prev]);
   };
 
   const handleCancelBooking = (bookingId: string) => {
@@ -82,18 +85,15 @@ export function App() {
   };
 
   const handleCheckInToggle = (id: string) => {
+    const target = bookings.find(b => b.id === id);
+    if (!target) return;
+    const newState = !target.isCheckedIn;
     setBookings(prev =>
-      prev.map(b => {
-        if (b.id === id) {
-          const newState = !b.isCheckedIn;
-          triggerToast(
-            newState ? `${b.clientName} marked as checked in! 🚪` : `Check-in reverted for ${b.clientName}`,
-            'check_circle'
-          );
-          return { ...b, isCheckedIn: newState };
-        }
-        return b;
-      })
+      prev.map(b => (b.id === id ? { ...b, isCheckedIn: newState } : b))
+    );
+    triggerToast(
+      newState ? `${target.clientName} marked as checked in! 🚪` : `Check-in reverted for ${target.clientName}`,
+      'check_circle'
     );
   };
 
@@ -158,8 +158,17 @@ export function App() {
       />
 
       {/* Main Screen Views Routing */}
-      <main className="flex-1 w-full pt-16">
-        {/* ==================== CLIENT VIEWS ==================== */}
+      <main className="flex-1 w-full pt-16 overflow-x-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${appMode}-${appMode === 'client' ? clientTab : appMode === 'business' ? businessTab : adminTab}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            className="w-full flex-1"
+          >
+            {/* ==================== CLIENT VIEWS ==================== */}
         {appMode === 'client' && (
           <>
             {clientTab === 'home' && (
@@ -206,19 +215,15 @@ export function App() {
             )}
 
             {clientTab === 'favorites' && (
-              <div className="px-4 py-6 max-w-2xl mx-auto flex flex-col gap-4">
-                <h1 className="text-[20px] font-bold text-[#141b2b] font-display">
-                  Saved &amp; Bookmarked Studios
-                </h1>
-                <ExploreScreen
-                  onSelectStudio={handleSelectStudio}
-                  onTriggerToast={triggerToast}
-                />
-              </div>
+              <FavoritesScreen
+                onSelectStudio={handleSelectStudio}
+                onExploreMore={() => setClientTab('explore')}
+                onTriggerToast={triggerToast}
+              />
             )}
 
             {clientTab === 'profile' && (
-              <div className="px-4 py-6 max-w-2xl mx-auto flex flex-col gap-4 pb-28">
+              <div className="px-4 py-6 max-w-2xl mx-auto flex flex-col gap-4 pb-28 lg:pb-8">
                 <div className="p-5 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex items-center gap-4">
                   <img
                     src={ASSETS.alexAvatar}
@@ -278,6 +283,7 @@ export function App() {
                 bookings={bookings}
                 onNavigateTab={(tab) => setBusinessTab(tab)}
                 onCheckInToggle={handleCheckInToggle}
+                onAddBooking={handleAddCustomBooking}
                 onTriggerToast={triggerToast}
               />
             )}
@@ -331,27 +337,35 @@ export function App() {
             onTriggerToast={triggerToast}
           />
         )}
+      </motion.div>
+    </AnimatePresence>
       </main>
 
       {/* Floating Tactical Toast Banner Stack */}
       <div className="fixed top-20 left-4 right-4 z-50 flex flex-col items-center pointer-events-none gap-2">
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className="pointer-events-auto max-w-sm w-full bg-[#141b2b] text-white px-4 py-3 rounded-2xl shadow-xl border border-white/10 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200"
-          >
-            <span className="material-symbols-outlined text-[#7ffc97] text-[20px] shrink-0">
-              {toast.icon || 'check_circle'}
-            </span>
-            <span className="text-[13px] font-medium flex-1">{toast.message}</span>
-            <button
-              onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
-              className="text-white/60 hover:text-white p-1"
+        <AnimatePresence>
+          {toasts.map(toast => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: -16, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="pointer-events-auto max-w-sm w-full bg-[#141b2b] text-white px-4 py-3 rounded-2xl shadow-xl border border-white/10 flex items-center gap-3"
             >
-              <span className="material-symbols-outlined text-[16px]">close</span>
-            </button>
-          </div>
-        ))}
+              <span className="material-symbols-outlined text-[#7ffc97] text-[20px] shrink-0">
+                {toast.icon || 'check_circle'}
+              </span>
+              <span className="text-[13px] font-medium flex-1">{toast.message}</span>
+              <button
+                onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+                className="text-white/60 hover:text-white p-1 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       {/* Business "More" Drawer Menu */}

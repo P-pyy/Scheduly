@@ -70,7 +70,7 @@ export interface ClientProfile {
   phone: string;
   email?: string;
   avatar?: string;
-  initials: string;
+  initials?: string;
   tier: 'VIP' | 'Regular' | 'New Client';
   visits: number;
   totalSpent: number;
@@ -80,6 +80,7 @@ export interface ClientProfile {
   formulaNote?: string;
   clientNotes: string;
   preferredStylist?: string;
+  punctualityRate?: string;
   tags?: string[];
 }
 
@@ -87,6 +88,7 @@ export interface Stylist {
   id: string;
   name: string;
   role: string;
+  specialty?: string;
   avatar: string;
   rating: number;
   apptsCount: number;
