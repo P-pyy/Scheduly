@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { AppMode } from '../types';
 import { ASSETS } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
+import { mapRoleToAppMode } from '../lib/auth';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,25 +17,86 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onLoginSuccess,
   onTriggerToast
 }) => {
+  const { isConfigured, signIn, signUp, resetPassword } = useAuth();
+
   const [role, setRole] = useState<'client' | 'business'>('client');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [fullName, setFullName] = useState('Alex Santos');
+  const [phone, setPhone] = useState('+63 917 555 0192');
   const [email, setEmail] = useState('alex.santos@gmail.com');
-  const [password, setPassword] = useState('••••••••••••');
+  const [password, setPassword] = useState('Secret123!');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      if (isConfigured) {
+        if (isSignUp) {
+          // New user sign up - trigger will create profile with default role = 'customer'
+          const result = await signUp(email, password, fullName, phone);
+          if (result.error) {
+            setErrorMessage(result.error);
+            onTriggerToast(result.error, 'error');
+            setIsLoading(false);
+            return;
+          }
+          // The database trigger creates profile with role 'customer' -> client mode
+          onLoginSuccess('client');
+          onTriggerToast('Account created! Welcome to Scheduly ✨', 'check_circle');
+          onClose();
+        } else {
+          // Real email/password sign in
+          const result = await signIn(email, password);
+          if (result.error) {
+            setErrorMessage(result.error);
+            onTriggerToast(result.error, 'error');
+            setIsLoading(false);
+            return;
+          }
+          // Query session & profile role to determine mode
+          // Role is strictly derived from the database profile
+          onLoginSuccess(role);
+          onTriggerToast('Signed in successfully! ✨', 'check_circle');
+          onClose();
+        }
+      } else {
+        // Fallback simulated authentication when keys not provided
+        setTimeout(() => {
+          onLoginSuccess(role);
+          onTriggerToast(`Signed in successfully as ${role === 'client' ? 'Alex Santos' : 'Jamie Lim (Studio Bloom)'}! ✨`, 'check_circle');
+          onClose();
+        }, 500);
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Authentication failed');
+      onTriggerToast(err?.message || 'Authentication failed', 'error');
+    } finally {
       setIsLoading(false);
-      onLoginSuccess(role);
-      onTriggerToast(`Signed in successfully as ${role === 'client' ? 'Alex Santos' : 'Jamie Lim (Studio Bloom)'}! ✨`, 'check_circle');
-      onClose();
-    }, 600);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      onTriggerToast('Please enter your email address first', 'warning');
+      return;
+    }
+    if (isConfigured) {
+      const res = await resetPassword(email);
+      if (res.error) {
+        onTriggerToast(res.error, 'error');
+      } else {
+        onTriggerToast(`Password reset link dispatched to ${email}! 📧`, 'mail');
+      }
+    } else {
+      onTriggerToast(`Password reset link dispatched to ${email}! 📧`, 'mail');
+    }
   };
 
   return (
@@ -64,36 +127,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Account Role Segmented Switcher */}
-        <div className="p-1 rounded-2xl bg-[#f1f3ff] grid grid-cols-2 gap-1 border border-[#e9edff]">
-          <button
-            type="button"
-            onClick={() => {
-              setRole('client');
-              setEmail('alex.santos@gmail.com');
-            }}
-            className={`py-2 rounded-xl text-[13px] font-bold transition-all ${
-              role === 'client'
-                ? 'bg-white text-[#3525cd] shadow-xs'
-                : 'text-[#464555] hover:text-[#141b2b]'
-            }`}
-          >
-            Client Account
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setRole('business');
-              setEmail('jamie@studiobloom.ph');
-            }}
-            className={`py-2 rounded-xl text-[13px] font-bold transition-all ${
-              role === 'business'
-                ? 'bg-white text-[#3525cd] shadow-xs'
-                : 'text-[#464555] hover:text-[#141b2b]'
-            }`}
-          >
-            Business Owner
-          </button>
-        </div>
+        {!isSignUp && (
+          <div className="p-1 rounded-2xl bg-[#f1f3ff] grid grid-cols-2 gap-1 border border-[#e9edff]">
+            <button
+              type="button"
+              onClick={() => {
+                setRole('client');
+                setEmail('alex.santos@gmail.com');
+              }}
+              className={`py-2 rounded-xl text-[13px] font-bold transition-all ${
+                role === 'client'
+                  ? 'bg-white text-[#3525cd] shadow-xs'
+                  : 'text-[#464555] hover:text-[#141b2b]'
+              }`}
+            >
+              Client Account
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRole('business');
+                setEmail('jamie@studiobloom.ph');
+              }}
+              className={`py-2 rounded-xl text-[13px] font-bold transition-all ${
+                role === 'business'
+                  ? 'bg-white text-[#3525cd] shadow-xs'
+                  : 'text-[#464555] hover:text-[#141b2b]'
+              }`}
+            >
+              Business Owner
+            </button>
+          </div>
+        )}
 
         {/* Social Auth Fast Buttons */}
         <div className="flex flex-col gap-2 pt-1">
@@ -137,11 +202,50 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="flex-1 h-[1px] bg-[#e9edff]"></div>
         </div>
 
+        {/* Error notice if present */}
+        {errorMessage && (
+          <div className="p-3 rounded-xl bg-[#fee2e2] text-[#991b1b] text-[12px] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]">error</span>
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
         {/* Form Fields */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {isSignUp && (
+            <>
+              <div>
+                <label className="text-[12px] font-bold text-[#141b2b] block mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  required
+                  placeholder="e.g. Alex Santos"
+                  className="w-full p-2.5 rounded-xl bg-[#f9f9ff] border border-[#e9edff] text-[13px] text-[#141b2b] focus:outline-none focus:border-[#3525cd]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[12px] font-bold text-[#141b2b] block mb-1">
+                  Mobile Number
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  placeholder="+63 9XX XXX XXXX"
+                  className="w-full p-2.5 rounded-xl bg-[#f9f9ff] border border-[#e9edff] text-[13px] text-[#141b2b] focus:outline-none focus:border-[#3525cd]"
+                />
+              </div>
+            </>
+          )}
+
           <div>
             <label className="text-[12px] font-bold text-[#141b2b] block mb-1">
-              {role === 'business' ? 'Work Email' : 'Email Address'}
+              {role === 'business' && !isSignUp ? 'Work Email' : 'Email Address'}
             </label>
             <input
               type="email"
@@ -155,13 +259,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-[12px] font-bold text-[#141b2b]">Password</label>
-              <button
-                type="button"
-                onClick={() => onTriggerToast('Password reset link dispatched! 📧', 'mail')}
-                className="text-[11px] text-[#3525cd] font-semibold hover:underline"
-              >
-                Forgot password?
-              </button>
+              {!isSignUp && (
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-[11px] text-[#3525cd] font-semibold hover:underline cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              )}
             </div>
             <div className="relative">
               <input
@@ -174,7 +280,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2.5 top-2.5 text-[#777587]"
+                className="absolute right-2.5 top-2.5 text-[#777587] cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   {showPassword ? 'visibility_off' : 'visibility'}
@@ -187,7 +293,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 mt-2 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[14px] font-semibold shadow-md flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full h-12 mt-2 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[14px] font-semibold shadow-md flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-70"
           >
             {isLoading ? (
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -201,8 +307,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="text-center pt-1 text-[12px] text-[#464555]">
           {isSignUp ? 'Already have an account?' : "Don't have an account yet?"}{' '}
           <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-[#3525cd] font-bold hover:underline"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setErrorMessage(null);
+            }}
+            className="text-[#3525cd] font-bold hover:underline cursor-pointer"
           >
             {isSignUp ? 'Sign In' : 'Sign Up'}
           </button>

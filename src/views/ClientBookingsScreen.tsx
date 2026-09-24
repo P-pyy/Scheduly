@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Booking } from '../types';
 import { ASSETS } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
+import { createReview } from '../lib/database';
 
 interface ClientBookingsScreenProps {
   bookings: Booking[];
@@ -19,6 +21,7 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
   onCancelBooking,
   onTriggerToast
 }) => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
 
   // Modals state
@@ -32,6 +35,8 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
   const [reviewModalBooking, setReviewModalBooking] = useState<Booking | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('Wonderful haircut! Stylist was super professional and attentive to scalp sensitivity.');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>(['SC-8918']);
 
   const activeBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
   const pastBookings = bookings.filter(b => b.status === 'completed');
@@ -92,10 +97,37 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
     onTriggerToast(`Booking #${cancelModalBooking.bookingNumber} has been cancelled.`, 'cancel');
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (!reviewModalBooking) return;
-    setReviewModalBooking(null);
-    onTriggerToast(`Thank you! Your 5-star review has been published for ${reviewModalBooking.businessName} ⭐`, 'stars');
+    if (reviewedBookingIds.includes(reviewModalBooking.id)) {
+      onTriggerToast('You have already submitted a review for this appointment! ⭐', 'info');
+      setReviewModalBooking(null);
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      // Derive authenticated context safely
+      const userId = user?.id || '00000000-0000-0000-0000-000000000011';
+      const businessId = '00000000-0000-0000-0000-000000000001';
+
+      await createReview({
+        booking_id: reviewModalBooking.id,
+        user_id: userId,
+        business_id: businessId,
+        rating: reviewRating,
+        comment: reviewComment.trim()
+      });
+
+      setReviewedBookingIds(prev => [...prev, reviewModalBooking.id]);
+      onTriggerToast(`Thank you! Your ${reviewRating}-star review has been published for ${reviewModalBooking.businessName} ⭐`, 'stars');
+      setReviewModalBooking(null);
+    } catch (err: any) {
+      console.warn('Failed to submit review:', err);
+      onTriggerToast(err.message || 'Unable to submit review. Please try again.', 'error');
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   return (
@@ -359,13 +391,20 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
               </div>
 
               <div className="flex gap-2 pt-2 border-t border-[#f1f3ff]">
-                <button
-                  onClick={() => setReviewModalBooking(booking)}
-                  className="flex-1 py-2 rounded-xl bg-[#f1f3ff] hover:bg-[#e9edff] text-[#3525cd] text-[12px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">rate_review</span>
-                  <span>Leave Review</span>
-                </button>
+                {reviewedBookingIds.includes(booking.id) ? (
+                  <div className="flex-1 py-2 rounded-xl bg-[#eafaf1] text-[#00702f] text-[12px] font-semibold flex items-center justify-center gap-1">
+                    <span className="material-symbols-outlined text-[16px]">verified</span>
+                    <span>Reviewed (5★)</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setReviewModalBooking(booking)}
+                    className="flex-1 py-2 rounded-xl bg-[#f1f3ff] hover:bg-[#e9edff] text-[#3525cd] text-[12px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">rate_review</span>
+                    <span>Leave Review</span>
+                  </button>
+                )}
                 <button
                   onClick={onBookNew}
                   className="flex-1 py-2 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[12px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-xs"
@@ -611,16 +650,27 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
 
             <div className="flex gap-2 pt-2 border-t border-[#e9edff]">
               <button
+                type="button"
+                disabled={isSubmittingReview}
                 onClick={() => setReviewModalBooking(null)}
-                className="py-2.5 px-4 rounded-xl bg-[#e9edff] text-[#464555] text-[13px] font-semibold cursor-pointer"
+                className="py-2.5 px-4 rounded-xl bg-[#e9edff] text-[#464555] text-[13px] font-semibold cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
+                type="button"
+                disabled={isSubmittingReview || !reviewComment.trim()}
                 onClick={handleSubmitReview}
-                className="flex-1 py-2.5 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[13px] font-semibold cursor-pointer shadow-xs"
+                className="flex-1 py-2.5 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
               >
-                Submit Review
+                {isSubmittingReview ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  <span>Submit Review</span>
+                )}
               </button>
             </div>
           </div>

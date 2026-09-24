@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminTab, ModerationTicket, ManagedUser } from '../types';
 import { ADMIN_KYC_REQUESTS } from '../data/mockData';
+import {
+  approveKycRpc,
+  resolveModerationTicketRpc,
+  banUserRpc,
+  updatePlatformSettingsRpc,
+  getPlatformSettings
+} from '../lib/database';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface AdminConsoleScreenProps {
   adminTab: AdminTab;
@@ -196,7 +204,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
     }
   ]);
 
-  const handleResolveTicket = (ticketId: string, actionText: string, toastText: string) => {
+  const handleResolveTicket = async (ticketId: string, actionText: string, toastText: string) => {
     setModerationTickets(prev =>
       prev.map(t =>
         t.id === ticketId
@@ -211,6 +219,15 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
           : t
       )
     );
+
+    if (isSupabaseConfigured) {
+      try {
+        await resolveModerationTicketRpc(ticketId, 'resolved', actionText, actionText);
+      } catch (err) {
+        console.warn('Failed to resolve moderation ticket in Supabase:', err);
+      }
+    }
+
     onTriggerToast(toastText, 'verified');
   };
 
@@ -342,8 +359,15 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
     }
   ]);
 
-  const handleBanUser = (userId: string, userName: string) => {
+  const handleBanUser = async (userId: string, userName: string) => {
     setBanningUserId(userId);
+    if (isSupabaseConfigured) {
+      try {
+        await banUserRpc(userId, 'Banned by platform super administrator');
+      } catch (err) {
+        console.warn('Failed to ban user in Supabase:', err);
+      }
+    }
     setTimeout(() => {
       setManagedUsers(prev =>
         prev.map(u => (u.id === userId ? { ...u, isBanned: true } : u))
@@ -462,8 +486,26 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
     }
   ]);
 
-  const handleSaveGlobalSettings = () => {
+  const handleSaveGlobalSettings = async () => {
     setSaveStatus('saving');
+
+    if (isSupabaseConfigured) {
+      try {
+        await updatePlatformSettingsRpc({
+          platform_fee_percent: platformFeePercent,
+          platform_fee_fixed: platformFeeFixed,
+          auto_cancel_timeout_minutes: autoCancelTimeout,
+          sms_balance: smsBalance,
+          toggle_gcash: toggleGcash,
+          toggle_vip: toggleVip,
+          toggle_commission: toggleCommission,
+          toggle_maintenance: toggleMaintenance
+        });
+      } catch (err) {
+        console.warn('Failed to update platform settings in Supabase:', err);
+      }
+    }
+
     setTimeout(() => {
       setSaveStatus('saved');
       onTriggerToast('Global parameters successfully synchronized across all platform nodes! ⚡', 'check_circle');
@@ -517,16 +559,30 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
     }, 500);
   };
 
-  const handleApprove = (id: string, name: string) => {
+  const handleApprove = async (id: string, name: string) => {
     setKycList(prev => prev.map(k => k.id === id ? { ...k, status: 'Verified & Active' } : k));
+    if (isSupabaseConfigured) {
+      try {
+        await approveKycRpc(id, 'verified');
+      } catch (err) {
+        console.warn('Failed to approve KYC in Supabase:', err);
+      }
+    }
     onTriggerToast(`Verified & Approved partner: ${name}! 🛡️`, 'verified');
     if (selectedInspection?.id === id) {
       setSelectedInspection(null);
     }
   };
 
-  const handleReject = (id: string, name: string) => {
+  const handleReject = async (id: string, name: string) => {
     setKycList(prev => prev.filter(k => k.id !== id));
+    if (isSupabaseConfigured) {
+      try {
+        await approveKycRpc(id, 'rejected', 'Document correction requested');
+      } catch (err) {
+        console.warn('Failed to reject KYC in Supabase:', err);
+      }
+    }
     onTriggerToast(`Requested document correction for: ${name}`, 'report');
     if (selectedInspection?.id === id) {
       setSelectedInspection(null);

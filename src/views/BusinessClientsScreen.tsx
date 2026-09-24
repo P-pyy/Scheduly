@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClientProfile } from '../types';
 import { INITIAL_CLIENTS } from '../data/mockData';
+import { getClientCrm, createClientCrm, addClientNote } from '../lib/database';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface BusinessClientsScreenProps {
   onTriggerToast: (msg: string, icon?: string) => void;
@@ -23,6 +25,22 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
   const [formTier, setFormTier] = useState<'VIP' | 'Regular' | 'New Client'>('New Client');
   const [formNotes, setFormNotes] = useState('');
 
+  useEffect(() => {
+    async function loadCrmData() {
+      if (isSupabaseConfigured) {
+        try {
+          const loaded = await getClientCrm();
+          if (loaded && loaded.length > 0) {
+            setClients(loaded);
+          }
+        } catch (err) {
+          console.warn('Failed to load CRM data from Supabase:', err);
+        }
+      }
+    }
+    loadCrmData();
+  }, []);
+
   const filtered = clients.filter(c => {
     const matchesSearch =
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -38,30 +56,62 @@ export const BusinessClientsScreen: React.FC<BusinessClientsScreenProps> = ({
   const newCount = clients.filter(c => c.tier === 'New Client').length;
   const regularCount = clients.filter(c => c.tier === 'Regular').length;
 
-  const handleAddConsultationNote = () => {
+  const handleAddConsultationNote = async () => {
     if (!newNoteText.trim() || !selectedClient) return;
+    const noteContent = newNoteText.trim();
     const updated = {
       ...selectedClient,
-      clientNotes: `${selectedClient.clientNotes}\n• [Today] ${newNoteText.trim()}`
+      clientNotes: `${selectedClient.clientNotes}\n• [Today] ${noteContent}`
     };
     setSelectedClient(updated);
     setClients(prev => prev.map(c => c.id === updated.id ? updated : c));
     setNewNoteText('');
+
+    if (isSupabaseConfigured) {
+      try {
+        await addClientNote(selectedClient.id, '00000000-0000-0000-0000-000000000001', noteContent);
+      } catch (err) {
+        console.warn('Failed to save client note to Supabase:', err);
+      }
+    }
+
     onTriggerToast('Consultation note appended to client CRM! 📝', 'note_add');
   };
 
-  const handleCreateClient = (e: React.FormEvent) => {
+  const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) {
       onTriggerToast('Please enter client name', 'error');
       return;
     }
 
+    let createdId = `client-${Date.now()}`;
+    const cleanPhone = formPhone.trim() || '+63 900 000 0000';
+    const cleanEmail = formEmail.trim() || `${formName.toLowerCase().replace(/\s+/g, '')}@example.com`;
+
+    if (isSupabaseConfigured) {
+      try {
+        const dbCrm = await createClientCrm({
+          business_id: '00000000-0000-0000-0000-000000000001',
+          name: formName.trim(),
+          phone: cleanPhone,
+          email: cleanEmail,
+          tier: formTier === 'New Client' ? 'New' : formTier,
+          formula_note: formNotes.trim() || undefined
+        });
+        if (dbCrm?.id) {
+          createdId = dbCrm.id;
+        }
+      } catch (err) {
+        console.warn('Failed to save client to Supabase:', err);
+      }
+    }
+
     const newClientObj: ClientProfile = {
-      id: `client-${Date.now()}`,
+      id: createdId,
       name: formName.trim(),
-      phone: formPhone.trim() || '+63 900 000 0000',
-      email: formEmail.trim() || `${formName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+      phone: cleanPhone,
+      email: cleanEmail,
       tier: formTier,
       totalSpent: formTier === 'VIP' ? 8500 : 0,
       visits: formTier === 'VIP' ? 6 : 1,

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { SalonService, Booking, Stylist } from '../types';
 import { INITIAL_STYLISTS, ASSETS } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
+import { createBookingRpc } from '../lib/database';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface BookingSlotScreenProps {
   service: SalonService;
@@ -15,6 +18,7 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
   onBack,
   onTriggerToast
 }) => {
+  const { user, profile } = useAuth();
   const [selectedDay, setSelectedDay] = useState(20);
   const [selectedTime, setSelectedTime] = useState('10:45 AM');
   const [selectedStylistId, setSelectedStylistId] = useState<string>('st-1');
@@ -37,16 +41,46 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
 
   const chosenStylist = INITIAL_STYLISTS.find(s => s.id === selectedStylistId) || INITIAL_STYLISTS[0];
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setIsSubmitting(true);
+    let generatedId = `SC-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    if (isSupabaseConfigured && user) {
+      try {
+        const [timePart, meridiem] = selectedTime.split(' ');
+        let [hours, minutes] = timePart.split(':').map(Number);
+        if (meridiem === 'PM' && hours < 12) hours += 12;
+        if (meridiem === 'AM' && hours === 12) hours = 0;
+        const startAt = new Date(Date.UTC(2026, 9, selectedDay, hours, minutes)).toISOString();
+
+        const dbBooking = await createBookingRpc({
+          business_id: '00000000-0000-0000-0000-000000000001',
+          service_id: service.id,
+          start_at: startAt,
+          client_name: profile?.full_name || user.email?.split('@')[0] || 'Alex Santos',
+          client_phone: profile?.phone || '+63 917 555 0192',
+          staff_id: null,
+          client_user_id: user.id,
+          client_note: clientNotes,
+          payment_method: service.deposit ? 'GCash Deposit' : 'Pay at Venue',
+          deposit_amount: service.deposit || 0
+        });
+
+        if (dbBooking?.booking_number) {
+          generatedId = dbBooking.booking_number;
+        }
+      } catch (err: any) {
+        console.warn('create_booking RPC notice:', err.message);
+      }
+    }
+
     setTimeout(() => {
-      const generatedId = `SC-${Math.floor(1000 + Math.random() * 9000)}`;
       const newBooking: Booking = {
         id: generatedId,
         bookingNumber: generatedId,
-        clientName: 'Alex Santos',
-        clientPhone: '+63 917 555 0192',
-        clientAvatar: ASSETS.alexAvatar,
+        clientName: profile?.full_name || 'Alex Santos',
+        clientPhone: profile?.phone || '+63 917 555 0192',
+        clientAvatar: profile?.avatar_url || ASSETS.alexAvatar,
         serviceTitle: service.title,
         stylistName: chosenStylist.name,
         stylistAvatar: chosenStylist.avatar,
@@ -65,7 +99,7 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
       onBookingConfirmed(newBooking);
       onTriggerToast(`Appointment confirmed! Booking #${generatedId} saved. 🎉`, 'check_circle');
       setIsSubmitting(false);
-    }, 600);
+    }, 500);
   };
 
   return (

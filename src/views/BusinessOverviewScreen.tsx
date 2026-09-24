@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Booking } from '../types';
 import { ASSETS, INITIAL_STYLISTS, INITIAL_SERVICES } from '../data/mockData';
+import { getMerchantKyc, submitMerchantKyc } from '../lib/database';
+import { DbKycRequest } from '../lib/database.types';
 
 interface BusinessOverviewScreenProps {
   bookings: Booking[];
@@ -22,6 +24,64 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
   // Modals
   const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
   const [isBlockTimeModalOpen, setIsBlockTimeModalOpen] = useState(false);
+
+  // KYC Verification State
+  const [kycData, setKycData] = useState<DbKycRequest | null>(null);
+  const [isKycModalOpen, setIsKycModalOpen] = useState(false);
+  const [kycTin, setKycTin] = useState('284-918-331-000');
+  const [kycDti, setKycDti] = useState(true);
+  const [kycMayorsPermit, setKycMayorsPermit] = useState(true);
+  const [kycDocUrl, setKycDocUrl] = useState('https://scheduly.ph/docs/kyc/studio-bloom-mayors-permit-2026.pdf');
+  const [isSubmittingKyc, setIsSubmittingKyc] = useState(false);
+
+  useEffect(() => {
+    async function loadKyc() {
+      try {
+        const data = await getMerchantKyc('00000000-0000-0000-0000-000000000001');
+        if (data) {
+          setKycData(data);
+          if (data.tin) setKycTin(data.tin);
+          setKycDti(data.dti_verified);
+          setKycMayorsPermit(data.mayors_permit);
+          if (data.document_url) setKycDocUrl(data.document_url);
+        }
+      } catch (err) {
+        console.warn('Failed to load merchant KYC in overview:', err);
+      }
+    }
+    loadKyc();
+  }, []);
+
+  const handleSubmitKyc = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!kycTin.trim()) {
+      onTriggerToast('Please enter your business Tax Identification Number (TIN)', 'warning');
+      return;
+    }
+    setIsSubmittingKyc(true);
+    try {
+      const updated = await submitMerchantKyc({
+        business_id: '00000000-0000-0000-0000-000000000001',
+        tin: kycTin.trim(),
+        dti_verified: kycDti,
+        mayors_permit: kycMayorsPermit,
+        document_url: kycDocUrl.trim() || undefined
+      });
+      setKycData(updated);
+      setIsKycModalOpen(false);
+      onTriggerToast(
+        updated.status === 'resubmitted'
+          ? 'Merchant verification documents resubmitted for compliance review! 🛡️'
+          : 'Merchant verification documents submitted! 🛡️',
+        'verified'
+      );
+    } catch (err: any) {
+      console.warn('Failed to submit KYC:', err);
+      onTriggerToast(err.message || 'Failed to submit verification documents', 'error');
+    } finally {
+      setIsSubmittingKyc(false);
+    }
+  };
 
   // New Booking Form State
   const [newClientName, setNewClientName] = useState('');
@@ -93,9 +153,9 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
     <div className="flex flex-col w-full pb-28 lg:pb-8 max-w-7xl mx-auto px-4 lg:px-8">
       {/* Studio Header & Status Pill */}
       <section className="pt-4 pb-2">
-        <div className="p-4 rounded-2xl bg-white shadow-xs border border-[#e9edff] flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white shadow-xs border border-[#e9edff] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="relative">
+            <div className="relative shrink-0">
               <img
                 src={ASSETS.ownerProfile}
                 alt="Jamie Lim"
@@ -110,27 +170,86 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
               />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-[17px] font-bold text-[#141b2b] font-display">Jamie Lim</h1>
                 <span className="text-[11px] font-semibold text-[#464555]">Studio Bloom</span>
+                {/* Merchant KYC Verification Pill */}
+                <button
+                  onClick={() => setIsKycModalOpen(true)}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors ${
+                    kycData?.status === 'verified'
+                      ? 'bg-[#eafaf1] text-[#00702f] hover:bg-[#d5f5e3]'
+                      : kycData?.status === 'rejected'
+                      ? 'bg-[#fee2e2] text-[#991b1b] hover:bg-[#fecaca]'
+                      : kycData?.status === 'resubmitted'
+                      ? 'bg-[#fef3c7] text-[#92400e] hover:bg-[#fde68a]'
+                      : 'bg-[#e9edff] text-[#3525cd] hover:bg-[#dce2f7]'
+                  }`}
+                  title="Click to view Merchant KYC verification status"
+                >
+                  <span className="material-symbols-outlined text-[13px]">
+                    {kycData?.status === 'verified'
+                      ? 'verified'
+                      : kycData?.status === 'rejected'
+                      ? 'warning'
+                      : 'hourglass_top'}
+                  </span>
+                  <span>
+                    {kycData?.status === 'verified'
+                      ? 'KYC Verified'
+                      : kycData?.status === 'rejected'
+                      ? 'KYC Action Req.'
+                      : kycData?.status === 'resubmitted'
+                      ? 'KYC In Review'
+                      : 'KYC Pending'}
+                  </span>
+                </button>
               </div>
               <p className="text-[12px] text-[#464555]">High Street South BGC • Flagship</p>
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              setStoreIsOpen(!storeIsOpen);
-              onTriggerToast(storeIsOpen ? 'Store set to Closed for Walk-ins' : 'Store is OPEN for online bookings! 🟢', 'storefront');
-            }}
-            className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
-              storeIsOpen ? 'bg-[#7ffc97] text-[#002109]' : 'bg-[#dee2ef] text-[#424751]'
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${storeIsOpen ? 'bg-[#005522] animate-pulse' : 'bg-[#5a5e69]'}`}></span>
-            <span>{storeIsOpen ? 'Open Now' : 'Paused'}</span>
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button
+              onClick={() => setIsKycModalOpen(true)}
+              className="px-3 py-1.5 rounded-xl border border-[#e9edff] text-[12px] font-semibold text-[#464555] hover:text-[#141b2b] hover:bg-[#f1f3ff] transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px] text-[#3525cd]">shield_with_heart</span>
+              <span>Verification</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setStoreIsOpen(!storeIsOpen);
+                onTriggerToast(storeIsOpen ? 'Store set to Closed for Walk-ins' : 'Store is OPEN for online bookings! 🟢', 'storefront');
+              }}
+              className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+                storeIsOpen ? 'bg-[#7ffc97] text-[#002109]' : 'bg-[#dee2ef] text-[#424751]'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${storeIsOpen ? 'bg-[#005522] animate-pulse' : 'bg-[#5a5e69]'}`}></span>
+              <span>{storeIsOpen ? 'Open Now' : 'Paused'}</span>
+            </button>
+          </div>
         </div>
+
+        {/* KYC Attention Banner if rejected */}
+        {kycData?.status === 'rejected' && (
+          <div className="mt-2 p-3 rounded-xl bg-[#fee2e2] border border-[#fecaca] flex items-center justify-between gap-3 text-[12px] text-[#991b1b]">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">error</span>
+              <span>
+                <strong>Verification Attention Needed:</strong> {kycData.issue_note || 'Document renewal needed'}.
+              </span>
+            </div>
+            <button
+              onClick={() => setIsKycModalOpen(true)}
+              className="px-2.5 py-1 rounded-lg bg-[#ba1a1a] text-white text-[11px] font-bold hover:bg-[#93000a] cursor-pointer"
+            >
+              Fix Documents
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Quick Business Actions Row */}
@@ -363,6 +482,16 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                   <span className="text-[10px] text-[#00702f] font-medium">Walk-ins open</span>
                 </div>
               </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-[#f1f3ff]">
+                <span className="text-[11px] text-[#464555]">Staff schedule synchronized</span>
+                <button
+                  onClick={() => onNavigateTab('services')}
+                  className="text-[12px] font-semibold text-[#3525cd] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Team &amp; Working Hours →</span>
+                </button>
+              </div>
             </div>
           </section>
         </div>
@@ -588,6 +717,151 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: MERCHANT KYC VERIFICATION ================= */}
+      {isKycModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-3xl p-5 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-[#e9edff] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#3525cd] text-[22px]">verified_user</span>
+                <h3 className="text-[16px] font-bold text-[#141b2b]">Business Verification (KYC)</h3>
+              </div>
+              <button
+                onClick={() => setIsKycModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-[#f1f3ff] flex items-center justify-center text-[#464555] hover:text-[#141b2b] cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Current KYC Status Banner */}
+            <div
+              className={`p-3 rounded-2xl border flex flex-col gap-1 ${
+                kycData?.status === 'verified'
+                  ? 'bg-[#eafaf1] border-[#7ffc97] text-[#002109]'
+                  : kycData?.status === 'rejected'
+                  ? 'bg-[#fff0f0] border-[#ffb4ab] text-[#ba1a1a]'
+                  : kycData?.status === 'resubmitted'
+                  ? 'bg-[#fff8e6] border-[#ffe8b3] text-[#78350f]'
+                  : 'bg-[#e9edff] border-[#c8d5ff] text-[#141b2b]'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 font-bold text-[13px]">
+                <span className="material-symbols-outlined text-[18px]">
+                  {kycData?.status === 'verified'
+                    ? 'verified'
+                    : kycData?.status === 'rejected'
+                    ? 'error'
+                    : 'hourglass_top'}
+                </span>
+                <span>
+                  {kycData?.status === 'verified'
+                    ? 'Status: Verified & Active Partner'
+                    : kycData?.status === 'rejected'
+                    ? 'Status: Action Required (Rejected)'
+                    : kycData?.status === 'resubmitted'
+                    ? 'Status: Re-submitted for Review'
+                    : 'Status: Pending Verification'}
+                </span>
+              </div>
+              <p className="text-[12px] opacity-90 leading-relaxed">
+                {kycData?.status === 'verified'
+                  ? 'Studio Bloom is fully cleared for instant digital checkouts and daily payouts.'
+                  : kycData?.status === 'rejected'
+                  ? `${kycData.issue_note || 'Issue noted'}: ${kycData.issue_detail || 'Please provide current documentation.'}`
+                  : 'Your submission is queued for automated & supervisory review.'}
+              </p>
+            </div>
+
+            {/* KYC Submission Form */}
+            <form onSubmit={handleSubmitKyc} className="flex flex-col gap-3">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                  BIR Tax Identification Number (TIN) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={kycTin}
+                  onChange={e => setKycTin(e.target.value)}
+                  placeholder="e.g. 284-918-331-000"
+                  className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[13px] text-[#141b2b] font-mono focus:outline-none focus:border-[#3525cd]"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 p-3 rounded-2xl bg-[#f9f9ff] border border-[#e9edff]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                  Regulatory Permits &amp; Clearances
+                </span>
+
+                <label className="flex items-center justify-between gap-3 cursor-pointer">
+                  <span className="text-[13px] font-medium text-[#141b2b]">
+                    DTI Certificate of Registration
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={kycDti}
+                    onChange={e => setKycDti(e.target.checked)}
+                    className="w-5 h-5 text-[#3525cd] rounded cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between gap-3 cursor-pointer">
+                  <span className="text-[13px] font-medium text-[#141b2b]">
+                    2026 Mayor's / LGU Business Permit
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={kycMayorsPermit}
+                    onChange={e => setKycMayorsPermit(e.target.checked)}
+                    className="w-5 h-5 text-[#3525cd] rounded cursor-pointer"
+                  />
+                </label>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                  Document Storage URL / PDF Permit Link
+                </label>
+                <input
+                  type="url"
+                  value={kycDocUrl}
+                  onChange={e => setKycDocUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[12px] text-[#141b2b] font-mono focus:outline-none focus:border-[#3525cd]"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-3 border-t border-[#e9edff]">
+                <button
+                  type="button"
+                  onClick={() => setIsKycModalOpen(false)}
+                  className="py-2.5 px-4 rounded-xl bg-[#e9edff] text-[#464555] text-[13px] font-semibold cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingKyc}
+                  className="flex-1 py-2.5 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[13px] font-semibold shadow-xs cursor-pointer disabled:opacity-60 flex items-center justify-center gap-1.5"
+                >
+                  {isSubmittingKyc ? (
+                    <>
+                      <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                      <span>Submitting...</span>
+                    </>
+                  ) : kycData?.status === 'rejected' ? (
+                    <span>Resubmit KYC Documents</span>
+                  ) : (
+                    <span>Update KYC Documents</span>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

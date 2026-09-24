@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppMode, ClientTab, BusinessTab, AdminTab, Booking, SalonService, ToastMessage } from './types';
 import { INITIAL_BOOKINGS, INITIAL_SERVICES, ASSETS } from './data/mockData';
+import { useAuth } from './hooks/useAuth';
+import { getBookings, updateBookingStatus, setBookingCheckIn } from './lib/database';
+import { isSupabaseConfigured } from './lib/supabase';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { HomeScreen } from './views/HomeScreen';
@@ -20,6 +23,8 @@ import { FavoritesScreen } from './views/FavoritesScreen';
 import { AuthModal } from './views/AuthModal';
 
 export function App() {
+  const { user, profile, role, appMode: authAppMode, signOut } = useAuth();
+
   const [appMode, setAppMode] = useState<AppMode>('client');
   const [clientTab, setClientTab] = useState<ClientTab>('home');
   const [businessTab, setBusinessTab] = useState<BusinessTab>('overview');
@@ -30,6 +35,38 @@ export function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Load real bookings from Supabase
+  useEffect(() => {
+    async function loadBookings() {
+      if (isSupabaseConfigured) {
+        try {
+          const loaded = await getBookings({
+            clientUserId: appMode === 'client' && user ? user.id : undefined
+          });
+          if (loaded && loaded.length > 0) {
+            setBookings(loaded);
+          }
+        } catch (err) {
+          console.warn('Failed to load bookings from Supabase:', err);
+        }
+      }
+    }
+    loadBookings();
+  }, [user, appMode]);
+
+  // Sync mode with real profile role when authenticating
+  useEffect(() => {
+    if (user && profile?.role) {
+      if (profile.role === 'admin') {
+        setAppMode('admin');
+      } else if (profile.role === 'business_owner' || profile.role === 'staff') {
+        setAppMode('business');
+      } else {
+        setAppMode('client');
+      }
+    }
+  }, [user, profile]);
 
   // Trigger tactile floating toast notifications
   const triggerToast = (message: string, icon = 'info') => {
@@ -64,33 +101,61 @@ export function App() {
     setBookings(prev => [newBooking, ...prev]);
   };
 
-  const handleCancelBooking = (bookingId: string) => {
+  const handleCancelBooking = async (bookingId: string) => {
     setBookings(prev =>
       prev.map(b => (b.id === bookingId ? { ...b, status: 'cancelled' as const } : b))
     );
+    if (isSupabaseConfigured) {
+      try {
+        await updateBookingStatus(bookingId, 'cancelled');
+      } catch (err) {
+        console.warn('Failed to cancel booking in Supabase:', err);
+      }
+    }
     triggerToast('Appointment cancelled. Fee refunded to original payment.', 'cancel');
   };
 
   // Business actions
-  const handleAcceptBooking = (id: string) => {
+  const handleAcceptBooking = async (id: string) => {
     setBookings(prev =>
       prev.map(b => (b.id === id ? { ...b, status: 'confirmed' as const } : b))
     );
+    if (isSupabaseConfigured) {
+      try {
+        await updateBookingStatus(id, 'confirmed');
+      } catch (err) {
+        console.warn('Failed to confirm booking in Supabase:', err);
+      }
+    }
   };
 
-  const handleDeclineBooking = (id: string) => {
+  const handleDeclineBooking = async (id: string) => {
     setBookings(prev =>
       prev.map(b => (b.id === id ? { ...b, status: 'cancelled' as const } : b))
     );
+    if (isSupabaseConfigured) {
+      try {
+        await updateBookingStatus(id, 'cancelled');
+      } catch (err) {
+        console.warn('Failed to decline booking in Supabase:', err);
+      }
+    }
   };
 
-  const handleCheckInToggle = (id: string) => {
+  const handleCheckInToggle = async (id: string) => {
     const target = bookings.find(b => b.id === id);
     if (!target) return;
     const newState = !target.isCheckedIn;
     setBookings(prev =>
       prev.map(b => (b.id === id ? { ...b, isCheckedIn: newState } : b))
     );
+    if (isSupabaseConfigured) {
+      try {
+        await setBookingCheckIn(id, newState);
+      } catch (err) {
+        console.warn('Failed to set check in status in Supabase:', err);
+      }
+    }
     triggerToast(
       newState ? `${target.clientName} marked as checked in! 🚪` : `Check-in reverted for ${target.clientName}`,
       'check_circle'
@@ -226,21 +291,25 @@ export function App() {
               <div className="px-4 py-6 max-w-2xl mx-auto flex flex-col gap-4 pb-28 lg:pb-8">
                 <div className="p-5 rounded-2xl bg-white border border-[#e9edff] shadow-xs flex items-center gap-4">
                   <img
-                    src={ASSETS.alexAvatar}
-                    alt="Alex"
+                    src={profile?.avatar_url || ASSETS.alexAvatar}
+                    alt={profile?.full_name || 'User'}
                     referrerPolicy="no-referrer"
                     className="w-16 h-16 rounded-full object-cover ring-4 ring-[#3525cd]/15"
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-[18px] font-bold text-[#141b2b]">Alex Santos</h2>
-                      <span className="px-2 py-0.5 rounded-full bg-[#dee2ef] text-[#3525cd] text-[10px] font-bold">
-                        VIP
+                      <h2 className="text-[18px] font-bold text-[#141b2b]">
+                        {profile?.full_name || (user?.email ? user.email.split('@')[0] : 'Alex Santos')}
+                      </h2>
+                      <span className="px-2 py-0.5 rounded-full bg-[#dee2ef] text-[#3525cd] text-[10px] font-bold uppercase">
+                        {profile?.role || (user ? 'Customer' : 'VIP')}
                       </span>
                     </div>
-                    <p className="text-[13px] text-[#464555]">+63 917 555 0192 • BGC, Taguig</p>
+                    <p className="text-[13px] text-[#464555]">
+                      {profile?.phone || '+63 917 555 0192'} • {user?.email || 'BGC, Taguig'}
+                    </p>
                     <p className="text-[12px] text-[#00702f] font-semibold mt-1">
-                      14 visits completed with 5-star punctuality
+                      {user ? 'Authenticated Supabase User' : '14 visits completed with 5-star punctuality'}
                     </p>
                   </div>
                 </div>
@@ -251,7 +320,7 @@ export function App() {
                       setAppMode('business');
                       triggerToast('Switched to Business Portal view', 'storefront');
                     }}
-                    className="w-full p-4 rounded-xl bg-[#e9edff] text-[#3525cd] font-bold text-[14px] flex items-center justify-between hover:bg-[#dce2f7]"
+                    className="w-full p-4 rounded-xl bg-[#e9edff] text-[#3525cd] font-bold text-[14px] flex items-center justify-between hover:bg-[#dce2f7] cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <span className="material-symbols-outlined">storefront</span>
@@ -262,7 +331,7 @@ export function App() {
 
                   <button
                     onClick={() => setIsAuthOpen(true)}
-                    className="w-full p-4 rounded-xl bg-white border border-[#e9edff] text-[#141b2b] font-semibold text-[14px] flex items-center justify-between hover:bg-[#f1f3ff]"
+                    className="w-full p-4 rounded-xl bg-white border border-[#e9edff] text-[#141b2b] font-semibold text-[14px] flex items-center justify-between hover:bg-[#f1f3ff] cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <span className="material-symbols-outlined">account_circle</span>
@@ -270,6 +339,22 @@ export function App() {
                     </span>
                     <span className="material-symbols-outlined">chevron_right</span>
                   </button>
+
+                  {user && (
+                    <button
+                      onClick={async () => {
+                        await signOut();
+                        triggerToast('Signed out of Supabase session', 'logout');
+                      }}
+                      className="w-full p-4 rounded-xl bg-[#fee2e2] text-[#991b1b] font-semibold text-[14px] flex items-center justify-between hover:bg-[#fecaca] cursor-pointer transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="material-symbols-outlined">logout</span>
+                        <span>Sign Out ({user.email})</span>
+                      </span>
+                      <span className="material-symbols-outlined">chevron_right</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}

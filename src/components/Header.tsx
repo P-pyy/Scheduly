@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppMode, ClientTab, BusinessTab, AdminTab } from '../types';
 import { ASSETS } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
 
 interface HeaderProps {
   appMode: AppMode;
@@ -37,6 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
   canGoBack,
   onGoBack
 }) => {
+  const { user, profile } = useAuth();
   const [showPortalSelector, setShowPortalSelector] = useState(false);
 
   // Compute title & subtitle if not explicitly passed
@@ -360,7 +362,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Sign In / Switch Accounts"
           >
             <img
-              src={appMode === 'client' ? ASSETS.userProfile : ASSETS.ownerProfile}
+              src={profile?.avatar_url || (appMode === 'client' ? ASSETS.userProfile : ASSETS.ownerProfile)}
               alt="Profile"
               referrerPolicy="no-referrer"
               className="w-8 h-8 rounded-full object-cover ring-1 ring-[#c7c4d8]/30 shadow-xs group-hover:ring-2 group-hover:ring-[#3525cd] transition-all"

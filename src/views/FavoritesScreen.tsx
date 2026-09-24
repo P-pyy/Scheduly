@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Studio } from '../types';
 import { INITIAL_STUDIOS } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
+import { getBusinesses, getFavorites, toggleFavorite } from '../lib/database';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface FavoritesScreenProps {
   onSelectStudio: (studioId: string) => void;
@@ -13,6 +16,8 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
   onExploreMore,
   onTriggerToast
 }) => {
+  const { user } = useAuth();
+  const [studios, setStudios] = useState<Studio[]>(INITIAL_STUDIOS);
   // Initial default saved studios for Alex Santos
   const [favoriteIds, setFavoriteIds] = useState<string[]>([
     'studio-bloom',
@@ -22,14 +27,46 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'rating' | 'price'>('recent');
 
-  const handleToggleFavorite = (studio: Studio, e: React.MouseEvent) => {
+  useEffect(() => {
+    async function loadData() {
+      if (isSupabaseConfigured) {
+        try {
+          const loadedStudios = await getBusinesses();
+          if (loadedStudios && loadedStudios.length > 0) {
+            setStudios(loadedStudios);
+          }
+          if (user) {
+            const favs = await getFavorites(user.id);
+            if (favs && favs.length > 0) {
+              setFavoriteIds(favs);
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to load favorites data from Supabase:', err);
+        }
+      }
+    }
+    loadData();
+  }, [user]);
+
+  const handleToggleFavorite = async (studio: Studio, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (favoriteIds.includes(studio.id)) {
+    const isCurrentlyFav = favoriteIds.includes(studio.id);
+
+    if (isCurrentlyFav) {
       setFavoriteIds(prev => prev.filter(id => id !== studio.id));
       onTriggerToast(`Removed ${studio.name} from saved favorites`, 'bookmark_remove');
     } else {
       setFavoriteIds(prev => [...prev, studio.id]);
       onTriggerToast(`Saved ${studio.name} to favorites! ⭐`, 'bookmark_added');
+    }
+
+    if (isSupabaseConfigured && user) {
+      try {
+        await toggleFavorite(user.id, studio.id);
+      } catch (err) {
+        console.warn('Failed to persist favorite toggle in Supabase:', err);
+      }
     }
   };
 
@@ -39,7 +76,7 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = ({
   };
 
   // Filter bookmarked studios
-  const savedStudios = INITIAL_STUDIOS.filter(studio => favoriteIds.includes(studio.id));
+  const savedStudios = studios.filter(studio => favoriteIds.includes(studio.id));
 
   const filteredStudios = savedStudios.filter(studio => {
     if (categoryFilter === 'all') return true;

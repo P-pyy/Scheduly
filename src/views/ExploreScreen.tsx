@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Studio } from '../types';
 import { INITIAL_STUDIOS } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
+import { getBusinesses, getFavorites, toggleFavorite } from '../lib/database';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface ExploreScreenProps {
   onSelectStudio: (studioId: string) => void;
@@ -13,12 +16,38 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
   onTriggerToast,
   initialCategory = 'all'
 }) => {
+  const { user } = useAuth();
+  const [studios, setStudios] = useState<Studio[]>(INITIAL_STUDIOS);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [bookmarkedIds, setBookmarkedIds] = useState<Record<string, boolean>>({
     'studio-bloom': true,
     'northside-barber': true
   });
+
+  useEffect(() => {
+    async function loadData() {
+      if (isSupabaseConfigured) {
+        try {
+          const loaded = await getBusinesses();
+          if (loaded && loaded.length > 0) {
+            setStudios(loaded);
+          }
+          if (user) {
+            const favs = await getFavorites(user.id);
+            if (favs && favs.length > 0) {
+              const map: Record<string, boolean> = {};
+              favs.forEach(id => { map[id] = true; });
+              setBookmarkedIds(map);
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to load businesses from Supabase:', err);
+        }
+      }
+    }
+    loadData();
+  }, [user]);
 
   // Working filter state
   const [filterArea, setFilterArea] = useState<string>('all');
@@ -38,7 +67,7 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
     { id: 'tutors', label: 'Tutors' },
   ];
 
-  const toggleBookmark = (id: string, name: string, e: React.MouseEvent) => {
+  const toggleBookmark = async (id: string, name: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const willBeSaved = !bookmarkedIds[id];
     setBookmarkedIds(prev => ({ ...prev, [id]: willBeSaved }));
@@ -47,9 +76,17 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
     } else {
       onTriggerToast(`Removed ${name} from saved favorites`, 'bookmark_border');
     }
+
+    if (isSupabaseConfigured && user) {
+      try {
+        await toggleFavorite(user.id, id);
+      } catch (err) {
+        console.warn('Failed to toggle favorite in Supabase:', err);
+      }
+    }
   };
 
-  const filteredStudios = INITIAL_STUDIOS.filter(studio => {
+  const filteredStudios = studios.filter(studio => {
     // Search matching
     const query = searchQuery.toLowerCase().trim();
     if (query) {
