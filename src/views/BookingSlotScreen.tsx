@@ -98,7 +98,7 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
       <div className="px-4 py-3 bg-[#f1f3ff] flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-white shrink-0 border border-[#e9edff]">
-            <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
+            <img referrerPolicy="no-referrer"  src={service.image} alt={service.title} className="w-full h-full object-cover" />
           </div>
           <div>
             <h3 className="text-[14px] font-bold text-[#141b2b]">{service.title}</h3>
@@ -196,7 +196,7 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
                 : 'border-[#e9edff] bg-white hover:bg-[#f1f3ff]'
             }`}
           >
-            <img src={ASSETS.mariaAvatar} alt="Maria" className="w-8 h-8 rounded-full object-cover" />
+            <img referrerPolicy="no-referrer"  src={ASSETS.mariaAvatar} alt="Maria" className="w-8 h-8 rounded-full object-cover" />
             <div className="text-left">
               <div className="text-[12px] font-bold text-[#141b2b]">Maria Santos</div>
               <div className="text-[10px] text-[#464555]">4.95 ⭐ • Senior</div>
@@ -214,7 +214,7 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
                 : 'border-[#e9edff] bg-white hover:bg-[#f1f3ff]'
             }`}
           >
-            <img src={ASSETS.jamieAvatar} alt="Jamie" className="w-8 h-8 rounded-full object-cover" />
+            <img referrerPolicy="no-referrer"  src={ASSETS.jamieAvatar} alt="Jamie" className="w-8 h-8 rounded-full object-cover" />
             <div className="text-left">
               <div className="text-[12px] font-bold text-[#141b2b]">Jamie Lim</div>
               <div className="text-[10px] text-[#464555]">4.98 ⭐ • Founder</div>
@@ -232,7 +232,7 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
                 : 'border-[#e9edff] bg-white hover:bg-[#f1f3ff]'
             }`}
           >
-            <img src={ASSETS.julianAvatar} alt="Julian" className="w-8 h-8 rounded-full object-cover" />
+            <img referrerPolicy="no-referrer"  src={ASSETS.julianAvatar} alt="Julian" className="w-8 h-8 rounded-full object-cover" />
             <div className="text-left">
               <div className="text-[12px] font-bold text-[#141b2b]">Julian Cruz</div>
               <div className="text-[10px] text-[#464555]">4.88 ⭐ • Barber</div>

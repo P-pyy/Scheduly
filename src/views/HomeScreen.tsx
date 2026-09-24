@@ -117,9 +117,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 onClick={() => onSelectStudio('studio-bloom')}
                 className="flex items-center gap-3 min-w-0 cursor-pointer group"
               >
-                <div className="w-11 h-11 rounded-xl bg-[#e1e8fd] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <span className="material-symbols-outlined text-[#3525cd] text-[24px]">spa</span>
-                </div>
+                <img
+                  src={ASSETS.studioLogo}
+                  alt="Studio Bloom"
+                  referrerPolicy="no-referrer"
+                  className="w-11 h-11 rounded-xl object-cover ring-1 ring-[#e9edff] shrink-0 group-hover:scale-105 transition-transform shadow-xs"
+                />
                 <div className="flex flex-col min-w-0">
                   <span className="text-[16px] font-semibold text-[#141b2b] truncate group-hover:text-[#3525cd] transition-colors">
                     Studio Bloom
@@ -151,7 +154,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* Client & Action Micro-row */}
             <div className="flex items-center justify-between pt-1">
               <div className="flex items-center gap-2">
-                <img
+                <img referrerPolicy="no-referrer" 
                   src={ASSETS.mayaAvatar}
                   alt="Maya Santos"
                   className="w-7 h-7 rounded-full object-cover shadow-xs"
@@ -280,17 +283,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </p>
             </div>
             <div className="flex items-center -space-x-2 pt-1">
-              <img
+              <img referrerPolicy="no-referrer" 
                 src={ASSETS.alexAvatar}
                 alt="Client"
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-xs"
               />
-              <img
+              <img referrerPolicy="no-referrer" 
                 src={ASSETS.camilleAvatar}
                 alt="Client"
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-xs"
               />
-              <img
+              <img referrerPolicy="no-referrer" 
                 src={ASSETS.chloeAvatar}
                 alt="Client"
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-xs"

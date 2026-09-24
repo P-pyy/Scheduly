@@ -95,11 +95,20 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
       <section className="pt-4 pb-2">
         <div className="p-4 rounded-2xl bg-white shadow-xs border border-[#e9edff] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img
-              src={ASSETS.jamieAvatar}
-              alt="Jamie Lim"
-              className="w-12 h-12 rounded-full object-cover ring-2 ring-[#3525cd]/20"
-            />
+            <div className="relative">
+              <img
+                src={ASSETS.ownerProfile}
+                alt="Jamie Lim"
+                referrerPolicy="no-referrer"
+                className="w-12 h-12 rounded-full object-cover ring-2 ring-[#3525cd]/20 shadow-xs"
+              />
+              <img
+                src={ASSETS.studioLogo}
+                alt="Studio Bloom"
+                referrerPolicy="no-referrer"
+                className="w-5 h-5 rounded-full object-cover absolute -bottom-0.5 -right-0.5 ring-2 ring-white shadow-xs"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-[17px] font-bold text-[#141b2b] font-display">Jamie Lim</h1>

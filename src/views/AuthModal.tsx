@@ -49,7 +49,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center gap-1.5 pt-2">
-          <img src={ASSETS.logo} alt="Scheduly Logo" className="h-10 w-auto mb-1" />
+          <img
+            src={ASSETS.logo}
+            alt="Scheduly Logo"
+            referrerPolicy="no-referrer"
+            className="w-14 h-14 rounded-2xl object-cover shadow-xs ring-1 ring-[#e9edff] mb-1"
+          />
           <h2 className="text-[20px] font-bold text-[#141b2b] font-display">
             {isSignUp ? 'Create your account' : 'Welcome back to Scheduly'}
           </h2>

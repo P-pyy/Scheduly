@@ -147,7 +147,7 @@ export const BusinessAnalyticsScreen: React.FC<BusinessAnalyticsScreenProps> = (
                   className="p-3 rounded-xl bg-[#f1f3ff] flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-2.5">
-                    <img src={st.avatar} alt={st.name} className="w-10 h-10 rounded-full object-cover shadow-xs" />
+                    <img referrerPolicy="no-referrer"  src={st.avatar} alt={st.name} className="w-10 h-10 rounded-full object-cover shadow-xs" />
                     <div>
                       <div className="flex items-center gap-1.5">
                         <h4 className="text-[13px] font-bold text-[#141b2b]">{st.name}</h4>

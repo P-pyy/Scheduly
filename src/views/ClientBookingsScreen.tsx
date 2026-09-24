@@ -105,7 +105,7 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
         <div className="p-4 rounded-2xl bg-white shadow-xs border border-[#e9edff] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <img
+              <img referrerPolicy="no-referrer" 
                 src={ASSETS.alexAvatar}
                 alt="Alex Santos"
                 className="w-13 h-13 rounded-full object-cover ring-2 ring-[#3525cd]/20 shadow-xs"
@@ -239,7 +239,7 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
 
                   {booking.stylistAvatar && (
                     <div className="flex items-center gap-2">
-                      <img
+                      <img referrerPolicy="no-referrer" 
                         src={booking.stylistAvatar}
                         alt={booking.stylistName}
                         className="w-9 h-9 rounded-full object-cover ring-2 ring-white shadow-xs"

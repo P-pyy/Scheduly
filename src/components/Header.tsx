@@ -98,10 +98,13 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 min-w-0 group text-left cursor-pointer"
             title="Switch portal view"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#3525cd] to-[#4f46e5] flex items-center justify-center text-white shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-              <span className="material-symbols-outlined text-[19px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                event_available
-              </span>
+            <div className="w-8 h-8 rounded-xl bg-[#e9edff] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden ring-1 ring-[#e9edff]">
+              <img
+                src={appMode === 'business' ? ASSETS.studioLogo : ASSETS.logo}
+                alt="Logo"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
             </div>
             {appMode === 'admin' ? (
               <div className="flex items-center gap-1">
@@ -359,6 +362,7 @@ export const Header: React.FC<HeaderProps> = ({
             <img
               src={appMode === 'client' ? ASSETS.userProfile : ASSETS.ownerProfile}
               alt="Profile"
+              referrerPolicy="no-referrer"
               className="w-8 h-8 rounded-full object-cover ring-1 ring-[#c7c4d8]/30 shadow-xs group-hover:ring-2 group-hover:ring-[#3525cd] transition-all"
             />
           </button>

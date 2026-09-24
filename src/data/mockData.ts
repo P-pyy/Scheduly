@@ -1,40 +1,42 @@
 import { Booking, Studio, SalonService, ClientProfile, Stylist } from '../types';
 
 export const ASSETS = {
-  logo: "https://lh3.googleusercontent.com/aida/AEtjO1U8TBN25abQthj3494zw75xLyBdjxjd1fknl3s4tzs3iTEj1oyXxGE6Y4oIZjhLo6U0Ll0z41IM0DhpX_iGUPCTHjeB6cRZmJik7rwGXErSoFQydRvMUzQ9cYP5S_az1J6_FlnCpuzBnkskeMhteBOc1mUZo12xqVMm-wCCc2iQEsycPjOdHaIxCfV9-X0U2PStQISMZbbMbmvruoqoD7DgA7xTGCpk97ag52SPIGAxcyAhlA6pjIR5HiDq",
-  userProfile: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1TgRUZiTUXuCNkY1cNM2WJDM19fM4ZDx-znZ7iTAKz5J6_FvNhcZvoxARyBGqMu1uWdQN3n9gzmC-7tCta4voekz1GeOFV3PdQJbcnicMGIDUeK_NSv-2TrpPp1Vw1bxsoIZOY1lENGTcqqpl9s2Szezr4-4uKuBdbFeFze7blJnYVUngA0MAMAcyBW2kOzBe5JW3Tt7sE3HTKndXL65DS4D9U8P_J1CVGVu2FgwOpWEEFEFQsUY0-g",
-  ownerProfile: "https://lh3.googleusercontent.com/aida/AEtjO1W1Xn30vzAqvykWNFHXhvVnjvoAhQl75ef6a0QzZfPo3gcjaDxjTjLDQX8ni64TxkkNpXpC-cLSPsWbVhWS63qz6WKKwIHRJFuGaRk55Fh8GxbEjJAJjw-5chjE-2MBbIDhzD1VzqvXSN1FeMnyKtkRT1difxduwzMS2ZFMgKHIWyfeamEGasSzkp88QURENBV-Q2_pKdfBI1HYyeQuSKlHQaQY18p9jq18v_Z5IEoemi7wDahg5lMRP_M",
+  logo: "/images/logo.png",
+  schedulyLogo: "/images/scheduly_logo.jpg",
+  studioLogo: "/images/studio_bloom_logo.jpg",
+  userProfile: "/images/userProfile.jpg",
+  ownerProfile: "/images/owner_profile.jpg",
   
   // Clients
-  alexAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCl2cLQLdMyHdnPgL6-0ixwRmUkNtIdUaPKmWQyuHZAJN-fB33fpVQ1dysFmH6Gd49LP_tm1sTMhhorR-bbWNsrAek9FX1lr6kKIqBk_gtNDcJ-3nULP0LnAJOIdAIcVNGn5Hh3Unpg3Tdr2aPXLLtLrDdDJ3h32JaURedV7ramwW0xHu75ylMutPW7-vhemwhaD9GNPLXwKbquHRr7dM1UhAUUoKnvL4S3LG0_I-xg2ru5xLGyd6KoeQ",
-  camilleAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCJsACrcGna8dgvE1p7S4T6oOZBKayjZ-qU7HudtgTypYjPRRC6KG_X08RTlGuRd_CyC_y3gn7SteUoa39xHAVldv2N5Rl3y2bO-nnWgN9detqkhYj24_PVADIX39flRFEwK_ndMWHr5FX5_j2pYfO3cYfiqzJ-E7PdRorv5cOLDkydDTMny_Hu1J1bT5foRt-owNxs2ySHPBzaAy8__MA20XKNvMwYakiV-9zxVDVtR5fm33JglqL_uw",
-  chloeAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuBx3Z43uXDQ5taeK0GBcajyXdhpEMBA9aNRStYg9fobqPxjQqKPJ-FGQUoGsh8jNnmtvFuL7qZuebWsRpzcaIGq4z4xW4lWMxw33_7Z-yjunvsh3yMXR73WnTUUw2qe-EUZ2Qs8TbasZjFyJa-63ZdLyYJTLNIHsY9HhL_z6Dsmde8_bSIs5BQLQJ7YcD62PNoAQnKOq3p5cfszjQ1pOFAMtR5iqTlhAFFT0IRSx1sshHAGY72vOKFvAw",
-  marcoAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuC3MI7s-pcPddk0xc9oHYugKYXMD0PEwBG4QqoKj4qc_1wSlRRnLIEBBuZLY8Jd0CkabGL-f4AjKilRrYBFo_4zo8sXwYFyDbYlJqUm1A3unwfC-UZmOqTZMuLQ5FHDIblMZ1rNwRfhk2YK1p0cERPkJB1spKa0G2Dh_pGEVgRXX221cMh6ogs8n3kfIqC7cJ5pEWj8YtIgyk1XQWPLr18AOVExsARyEsrjhOScS8URONVjudjcHNj6Cw",
-  mayaAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDfu5zTNK5D0Pu2zXDlUMcx9VpLtuAAX4V_bbWdkKNS_9wqhTQatVYetENSdJ_dBv41ihoy8uQshOeg42JEykOl-8yp3wln0BnKXGupFebpUfQtyk6v7oWoqiHiGYTaDCIyrIs67MbExmQbq2qwMS88n0jFadd1qMc8E0eSAjkYJWlge5JFNYCvxJhLnS6MWutulXBCeHRUEIJlyPzYqnfMVXPkeDg6OJAF8Pe_m6USAwUAZ68fidxHww",
+  alexAvatar: "/images/alexAvatar.jpg",
+  camilleAvatar: "/images/camilleAvatar.jpg",
+  chloeAvatar: "/images/chloeAvatar.jpg",
+  marcoAvatar: "/images/marcoAvatar.jpg",
+  mayaAvatar: "/images/mayaAvatar.jpg",
 
   // Stylists
-  mariaAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCTMvwPZjmewFogFteKRepse9BDtlS0TefQu6UQK6fgx9_a0Jv0M0rY7e8GdeLH-3leWyAnb78x-YgmerU96Tck9WQHclzGnNPUAcmTWWnod7Pyib5gPCjR3wLiyiAqwtt26O_J8MBUKLoIcnppmKpJ1Sj0r645GUqdcytSoSH2OphtlfiJynxShDrhSm5BWvoiUuw1vd__XmMqR2o7yEuPUT49CJRoxeQvmA0bpYq9MlXi4XRiUk254w",
-  jamieAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAWh74MTUvu8EbuwgC2VA4KkjkyuoHI0WqWqMN0VxySwBv0EYFnqe89WzxVsLk--N3GlpgADT-q-bO-ppg17-EbBS7qWdzumZUNefaBANOQ2TZJZJoReUiWRLaBa_L40-sx8r98QY8SoL-CW9p9jGSarkM2TOFe15jJMu-N-7c0eC5gE5ipS8nvgheORK2I7wn6qrm9ozD3t_WG8mradB1r4vGlEYpBbE-5ESieZ8TDoWUpnKoXwsOO3g",
-  julianAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDD3Egb7WYXIQFQVnvYVtIfzWISht4hzLjdtC8nKm9tyGsZbkrcD26dbTBUmDHgoPZxEyWVEnT33QSohB8E6ASSH-KG32W5MzzIkBZE025zuXfkOYS7napb2unxuK1oAHtcEFsaRqPlJwnTqenYiKlucD7aWYOKycwmB5ky2ZJXwe1SWTrTxa5vyWTCbkxK-n_CStNV4LDxqOhhwHECGWBYptMuYMTy_8UMG8z0ttShPq7_vkRfUklFPw",
+  mariaAvatar: "/images/mariaAvatar.jpg",
+  jamieAvatar: "/images/jamieAvatar.jpg",
+  julianAvatar: "/images/julianAvatar.jpg",
 
   // Studios & Venues
-  studioBloomHero: "https://lh3.googleusercontent.com/aida-public/AB6AXuDTIBmBNQ8DyNX-7n520oC-7czO-Rrmokz9dzT0Rfx0eRDsSXR3RnfgqmJJBbhv7ykoy4f2HifFvY48gDS-J60a5o6sFPzlyvvWJNhTFK6v9m5BlOsNyQqxZVEOShdWQ6SkfwFm0x56-OhpTM98Eld93L_6W6Gw-MWPXZ132GXr_vfk2HByGe0uH5iBY4dqFdBmkwmpLfXD18hrIyO3oU0ML7ozWn530zDVo3Y5v2ZD47ZcSjQ-EKimGg",
-  studioBloomStorefront: "https://lh3.googleusercontent.com/aida-public/AB6AXuD1ncl0esr7-dj-f92p6DIOU8kiNXfN3LOZlEspKr6Qk7pL7td4i9EVM_0hbxTci2vuQHMWUSb-KvYvqyVFRdohn6ySHN0y3sr-QMtKjzQ4L3UjgAQkkLpWBrgMpj3g7sBXtepHhB50LHpe4xYi6K5tiWo-qLuMdP9PJ10_2BRxLvjBCTYwuw3C4hhyl0OnJCpJ8s-s3-NUK7O7VFEEMZ5T4cf8tEelmdV287EEdkrSb49dlJ9HkHFV3g",
-  studioBloomInside: "https://lh3.googleusercontent.com/aida-public/AB6AXuAB_PXr-BPloRZWrIg3z39sXtW1m8cgUEX8UBUQ46omqVotMGUoalMDra1xqx8X_ZWVsCByhhd9DI1Egu_DuWvNPyh37f197HoC2iyRqq0GIG8dhIpeczjgWpcrOX9V-SR47U98vXYppHVbsenyEzCylPZ1teEhvha-YY86L5qor72-ey0h6TQfMWYUBS1bP0dKwRiNfPXqywnvJuWwxW5dKgTtRMwUh5DdNcxLIfv5skY2rP7A59wGJg",
-  northsideBarberHero: "https://lh3.googleusercontent.com/aida-public/AB6AXuDtEzMQv0sdmTWBbWDuNHOe3rz6ANDjUl-2ydGZcWbN0hfW5bIXgSWAhpqzvIWC5f1-fE4fZbav9VAlNudqOnVmMVt2HzCJkJLXTGnmI-Usc8reW1SXjzVsg3ijm5cKPNasOhxCj7_E7yL-QaGGIVEmQgO45QZNZgBapZneKDfZR4xmNpxZiXDVNVMxzAquR67xyJ9Wnch13Re7_guPT_xxZiNAaxw0u1roHuLKvDv2-TESqSPdHPO_Rg",
-  northsideSquare: "https://lh3.googleusercontent.com/aida-public/AB6AXuC-AtBmcgWmqTd7PbDMhFJVPK_QBVPIvDeEs5pMhYdPGxAifISq3iY28Hp8CZ7ntNhLCRkhwbKas6VXLasAggdENzVFnt2mmt8PrU-_6zrt4Q1YkW8V0tOtztH53hBgb7p9WDNTNMg-MFR1IESZjRl6ORQGQdTNLu1dt3I6sbn8k_Q6Jv1ArPdRz86at4-Jn4XN1ArjzJMXBOS4_Z6HZNjE6G9A1hN_KGXz26wvpuy_ynEGWW683TRMnw",
-  glowNailHero: "https://lh3.googleusercontent.com/aida-public/AB6AXuDWnmFjTTr5fqjfw3Y3O1QL5_Awy6q3Hl29Lfb6W4BzsNOQcJLKZYWWU-uNEcE_YmhArCR2bTs5rNXt75hqPzmX2qbJSYSi41K6iaxxiauB4oz4BVLNAPrwtuJeOIM3r0pfINh2v077AwOqJE5ho408jUVtubdaAdBG0lXavvB57aAytsUCoTfQBBYaiflx55290OzKJcgDFuE2PdYgyHqDqinu3LFSyC1-WhHjlWeHx99xN7OAFIW9fA",
-  glowSquare: "https://lh3.googleusercontent.com/aida-public/AB6AXuC4PpAyn-u1bmg-CV_f5VRs0edHSuKY7ozXTNcXOfsrX_lzzcDbtNn9Wx1jZo4A7bCFUxkqXSURQNDGaRcsYc8b9hZ9kyL18Di8C0-q-cbOaZuuRLVLsGXhAz56XlAHSZXE-dbv8bS9yiL4aFgSx5nfAu_hwbANh--AE0WNi8J7mGHx0rrs63MUdthyx77WZcH_VgnUrrqWuRuroCOfi7VjrmbmMc0p2jnOd-dlD2LtPeua91neqIfA3w",
-  mindfulSpaHero: "https://lh3.googleusercontent.com/aida-public/AB6AXuBPJa3Ab9KZ1bQ4G3witlZGnufobnk-Wrnz--ouN5Nl5wM6Tw8baBacyk3auAsLZ79aAMpKmHJzEkHmkjwN-UMGughedRTehLG_fzWqYQyhjjmCD2QMRu9dS7-h-iBt1MT6h-KThiFjtbvwisvDG9RNPB-KWga6f_3LTHQ7o4ddM9kZlBzcQzi78juh4h4V_PheD12op1b4D2Hy9ltl51YpYxQmxvzBdaBNqJb2Iy8UKdf_gV0DdMkN2A",
-  auraSpaHero: "https://lh3.googleusercontent.com/aida-public/AB6AXuDxGT2eoOFlrycz18ghBTokkv6U-GyEQrmYtRDUmlUP9tgKlUaj22DbeJPN5yBJhVl1ZDWH-KUtHFBlEwFeeGOyJrS6mAsKr6u4Aymh0sMwNAbz5rY3MJaD-MgItCHNM4QCRG5E_yZ3oMYRXx5b8P03M_ksr2tY4IyNYq4g3UFZU-QaVJrxmyy8Qby0qajgfctMLUQZoQawdwKCIwEneshzSFjU20ZYt_qkz8PLQGSbiC5JXWHJbc1QeA",
-  glowNailQC: "https://lh3.googleusercontent.com/aida-public/AB6AXuCmF6k5odkqVLgWXZdDofji1JVUW1w5PsHvaydVf-CUuxkRLQw5FEx6kA4QwcnPZOlXBOiTUoFc0ejppLAuS_J2mVz1_mlopUUFRMI8v71zaZTVhxn4xMfSnAUBluMn8GOGB0CEQD8GmgTw98PjylWBeI8DhIgPUEP0EBQcvU0-U9rKhymS7hSECTrQMm1xwags4Aa4fWIbWKLAG1YN72Eyc_IgKk3njpl9JUwGHD4Yt_MXgax86FvTAA",
+  studioBloomHero: "/images/studioBloomHero.jpg",
+  studioBloomStorefront: "/images/studioBloomStorefront.jpg",
+  studioBloomInside: "/images/studioBloomInside.jpg",
+  northsideBarberHero: "/images/northsideBarberHero.jpg",
+  northsideSquare: "/images/northsideSquare.jpg",
+  glowNailHero: "/images/glowNailHero.jpg",
+  glowSquare: "/images/glowSquare.jpg",
+  mindfulSpaHero: "/images/mindfulSpaHero.jpg",
+  auraSpaHero: "/images/auraSpaHero.jpg",
+  glowNailQC: "/images/glowNailQC.jpg",
 
   // Services
-  haircutService: "https://lh3.googleusercontent.com/aida-public/AB6AXuClMDO6G36QaszQmOH5VnIrVIrItiXjnTsK7qM0TWvmYq4xT4ugV9kA1opy4eoQ_0BojEZX1xBMko7_QR7RGByvbKIjSv5rJWFyfmfOIO9bQwXYR7mqSi-RBUPSp3DSf54Sau9tFhw1DOgpFS8CA7o82X-UHfo7sK6rtA4AN2eI_ytq4PPSkcYZr88ufasKjePKddFM6FF4uHKO4Htjhdyljt3sYrSlsO7fjvmCTxB0xuHM7b6f7KGGLQ",
-  blowoutService: "https://lh3.googleusercontent.com/aida-public/AB6AXuDH3NfIutckDjwrAaEgXI6WD2fD4_aOLxx3-gOdhyb5DYHMGNaR4OMPCShS-UQqG2Z-YDLzLnGcstz2BxmtOLimjKhf_PqiO8e6fY0bZRpL9vK37ktO8yCUTf3Bmhif56kANdmCEX-wDNf_xex-EWLhza-ESe8LqsAYrT-zgQXqaFyQfSLjQdHcg7BnzVXnemMQNg67ljzBKJ6RypUad-61swXsKgY5mRq65qxecJ-GwpkCi6Kj7T-wOQ",
-  balayageService: "https://lh3.googleusercontent.com/aida-public/AB6AXuB7QMejW22tvm-lQa3g8XQ1kB4TxHQtCne8aCFeMj5qSXxOV9DdFGHGOygYECQmmy8fIw5D5HbsBIpTgCUkaiqOWsvPCfIu2VAqUV5K5kTEKqSyBiepQgWvhPmW7GTXYCkIksobnDQXOzzz2e76v6kpwzWNV6nKxMIyrDT5HuU5YR-HzyIq0es3TDNetgz7uKsqTx_Dgs4q317NkSOd4a-HLgBbSMLbZT8LcmrAyiR7s0PwPAXv60ZH5g",
-  keratinService: "https://lh3.googleusercontent.com/aida-public/AB6AXuCIsswGNBSo6zliWiyIXdZkZSHt4Dz3fEgiN2ueF_KycqlOkgMZEiMBBS0-gv7Urr-TLB2arbMzX1Kp7umvR4laZ9jJ2MYvQ1-xT32C-m-k8JGxfZQs6GuJAR3iKFoEVjeqaq5JCEuP3RPg7G7JtgYHZ33h_tUEL_e5OTlBZXvqz9pE_XgbywIxGplCHyIDVY3b9xdo5tD9emX3meipcKPdkUwaiHXuhoHtEYYh4aONwEe7SAosk89y4A",
-  manicureService: "https://lh3.googleusercontent.com/aida-public/AB6AXuBFelJMD31QtuSSYo08OY9PPMBzu1jI_ILBhesOAaqQt6eBWYnNW36HtgNcBRPGDt52DAe5ERXr8kIh7qD2vI-20iEBd0NBPDIS8yIMRYkR3iKrG8oiSWagkUm_p97FXaOLRH6a0xf2VGZUT3VlUO7BQH5NYuW8B6ZVU9LxIF5eFNI3wzq7pDFnUSJgnnA4lvbLfLoTaTS_isH-SS9pHMPRJLrnqVYiY-sK6AsH7X-aBXEyo2rT7mKnjA"
+  haircutService: "/images/haircutService.jpg",
+  blowoutService: "/images/blowoutService.jpg",
+  balayageService: "/images/balayageService.jpg",
+  keratinService: "/images/keratinService.jpg",
+  manicureService: "/images/manicureService.jpg"
 };
 
 export const INITIAL_STUDIOS: Studio[] = [

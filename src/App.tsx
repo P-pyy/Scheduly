@@ -228,6 +228,7 @@ export function App() {
                   <img
                     src={ASSETS.alexAvatar}
                     alt="Alex"
+                    referrerPolicy="no-referrer"
                     className="w-16 h-16 rounded-full object-cover ring-4 ring-[#3525cd]/15"
                   />
                   <div>

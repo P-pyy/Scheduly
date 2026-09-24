@@ -66,7 +66,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
       <section className="px-4 pt-1">
         <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm border border-[#e9edff]">
           <div className="relative h-48 w-full overflow-hidden bg-[#e9edff]">
-            <img
+            <img referrerPolicy="no-referrer" 
               src={ASSETS.studioBloomInside}
               alt="Studio Bloom Interior"
               className="w-full h-full object-cover"
@@ -273,7 +273,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                       </div>
                     </div>
                     <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[#e9edff]">
-                      <img src={srv.image} alt={srv.title} className="w-full h-full object-cover" />
+                      <img referrerPolicy="no-referrer"  src={srv.image} alt={srv.title} className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -339,7 +339,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                       </div>
                     </div>
                     <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[#e9edff]">
-                      <img src={srv.image} alt={srv.title} className="w-full h-full object-cover" />
+                      <img referrerPolicy="no-referrer"  src={srv.image} alt={srv.title} className="w-full h-full object-cover" />
                     </div>
                   </div>
 
@@ -405,7 +405,7 @@ export const ServiceDetailsScreen: React.FC<ServiceDetailsScreenProps> = ({
                       </div>
                     </div>
                     <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[#e9edff]">
-                      <img src={srv.image} alt={srv.title} className="w-full h-full object-cover" />
+                      <img referrerPolicy="no-referrer"  src={srv.image} alt={srv.title} className="w-full h-full object-cover" />
                     </div>
                   </div>
 

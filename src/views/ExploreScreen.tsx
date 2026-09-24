@@ -305,7 +305,7 @@ export const ExploreScreen: React.FC<ExploreScreenProps> = ({
                 >
                   {/* Image banner with badges */}
                   <div className="relative h-38 lg:h-40 w-full overflow-hidden bg-[#e9edff]">
-                    <img
+                    <img referrerPolicy="no-referrer" 
                       src={studio.image}
                       alt={studio.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

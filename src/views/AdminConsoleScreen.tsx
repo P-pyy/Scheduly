@@ -327,8 +327,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
       role: 'admin',
       roleBadge: 'Platform Admin',
       subBadge: 'Lead Dev',
-      avatarUrl:
-        'https://lh3.googleusercontent.com/aida/AEtjO1W1Xn30vzAqvykWNFHXhvVnjvoAhQl75ef6a0QzZfPo3gcjaDxjTjLDQX8ni64TxkkNpXpC-cLSPsWbVhWS63qz6WKKwIHRJFuGaRk55Fh8GxbEjJAJjw-5chjE-2MBbIDhzD1VzqvXSN1FeMnyKtkRT1difxduwzMS2ZFMgKHIWyfeamEGasSzkp88QURENBV-Q2_pKdfBI1HYyeQuSKlHQaQY18p9jq18v_Z5IEoemi7wDahg5lMRP_M',
+      avatarUrl: '/images/owner_profile.jpg',
       avatarBadgeIcon: 'verified_user',
       avatarBadgeBg: 'bg-[#3525cd]',
       verified: true,
@@ -956,7 +955,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#e9edff] shrink-0">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <img referrerPolicy="no-referrer"  src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div>
                       <h3 className="text-[15px] font-bold text-[#141b2b]">{item.name}</h3>
@@ -1242,7 +1241,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
                       {/* Avatar */}
                       <div className="relative shrink-0">
                         {user.avatarUrl ? (
-                          <img
+                          <img referrerPolicy="no-referrer" 
                             src={user.avatarUrl}
                             alt={user.name}
                             className="w-12 h-12 rounded-full object-cover"
@@ -2920,7 +2919,7 @@ export const AdminConsoleScreen: React.FC<AdminConsoleScreenProps> = ({
             </div>
 
             <div className="rounded-xl overflow-hidden border border-[#e9edff] h-48 bg-gray-100 relative">
-              <img
+              <img referrerPolicy="no-referrer" 
                 src={selectedInspection.image}
                 alt="Document proof"
                 className="w-full h-full object-cover"
