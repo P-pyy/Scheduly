@@ -121,6 +121,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   src={ASSETS.studioLogo}
                   alt="Studio Bloom"
                   referrerPolicy="no-referrer"
+                  onError={(e) => { e.currentTarget.src = ASSETS.logo; }}
                   className="w-11 h-11 rounded-xl object-cover ring-1 ring-[#e9edff] shrink-0 group-hover:scale-105 transition-transform shadow-xs"
                 />
                 <div className="flex flex-col min-w-0">
@@ -154,9 +155,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* Client & Action Micro-row */}
             <div className="flex items-center justify-between pt-1">
               <div className="flex items-center gap-2">
-                <img referrerPolicy="no-referrer" 
+                <img
                   src={ASSETS.mayaAvatar}
                   alt="Maya Santos"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => { e.currentTarget.src = ASSETS.alexAvatar; }}
                   className="w-7 h-7 rounded-full object-cover shadow-xs"
                 />
                 <span className="text-[12px] text-[#464555]">
@@ -283,19 +286,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </p>
             </div>
             <div className="flex items-center -space-x-2 pt-1">
-              <img referrerPolicy="no-referrer" 
+              <img
                 src={ASSETS.alexAvatar}
                 alt="Client"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.src = ASSETS.alexAvatar; }}
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-xs"
               />
-              <img referrerPolicy="no-referrer" 
+              <img
                 src={ASSETS.camilleAvatar}
                 alt="Client"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.src = ASSETS.alexAvatar; }}
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-xs"
               />
-              <img referrerPolicy="no-referrer" 
+              <img
                 src={ASSETS.chloeAvatar}
                 alt="Client"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.src = ASSETS.alexAvatar; }}
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-xs"
               />
               <div className="w-8 h-8 rounded-full bg-[#dee2ef] flex items-center justify-center text-[#60646f] text-[11px] font-bold ring-2 ring-white shadow-xs">

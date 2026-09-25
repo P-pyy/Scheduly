@@ -6,6 +6,7 @@ import {
   createService,
   updateService,
   deleteService,
+  getBusinessByOwnerId,
   getFullStaff,
   createStaff,
   updateStaff,
@@ -41,8 +42,8 @@ export const ServicesManagementScreen: React.FC<ServicesManagementScreenProps> =
   onTriggerToast
 }) => {
   const { user } = useAuth();
-  // Guaranteed authenticated business context - business owners cannot manipulate other businesses
-  const ownerBusinessId = '00000000-0000-0000-0000-000000000001';
+  // Database-authoritative business context for authenticated owner
+  const [ownerBusinessId, setOwnerBusinessId] = useState<string>('00000000-0000-0000-0000-000000000001');
 
   const [activeSection, setActiveSection] = useState<'services' | 'staff'>(initialSection);
 
@@ -93,8 +94,21 @@ export const ServicesManagementScreen: React.FC<ServicesManagementScreenProps> =
   // ---------------- INITIAL LOAD ----------------
   useEffect(() => {
     async function loadData() {
+      let currentBizId = '00000000-0000-0000-0000-000000000001';
+      if (user?.id && isSupabaseConfigured) {
+        try {
+          const ownerBiz = await getBusinessByOwnerId(user.id);
+          if (ownerBiz?.id) {
+            currentBizId = ownerBiz.id;
+            setOwnerBusinessId(currentBizId);
+          }
+        } catch (err) {
+          console.warn('Failed to resolve owner business:', err);
+        }
+      }
+
       try {
-        const loadedServices = await getServices(ownerBusinessId);
+        const loadedServices = await getServices(currentBizId);
         if (loadedServices && loadedServices.length > 0) {
           setServices(loadedServices);
         }
@@ -103,8 +117,8 @@ export const ServicesManagementScreen: React.FC<ServicesManagementScreenProps> =
       }
 
       try {
-        const loadedStaff = await getFullStaff(ownerBusinessId);
-        if (loadedStaff && loadedStaff.length > 0) {
+        const loadedStaff = await getFullStaff(currentBizId);
+        if (loadedStaff) {
           setStaffList(loadedStaff);
 
           // Preload service assignment counts
@@ -120,7 +134,7 @@ export const ServicesManagementScreen: React.FC<ServicesManagementScreenProps> =
       }
     }
     loadData();
-  }, []);
+  }, [user?.id]);
 
   // ---------------- SERVICE ACTIONS ----------------
   const handleToggleActive = async (serviceId: string, current: boolean) => {

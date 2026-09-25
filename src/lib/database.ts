@@ -72,6 +72,22 @@ export async function getBusinesses(): Promise<Studio[]> {
   }
 }
 
+export async function getBusinessByOwnerId(ownerId: string): Promise<DbBusiness | null> {
+  if (!isSupabaseConfigured) return null;
+  try {
+    const { data, error } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('owner_id', ownerId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data as DbBusiness;
+  } catch (err) {
+    console.warn('Failed to load business by owner:', err);
+    return null;
+  }
+}
+
 // -------------------------------------------------------------
 // SERVICES
 // -------------------------------------------------------------
@@ -91,6 +107,7 @@ export async function getServices(businessId?: string): Promise<SalonService[]> 
 
     return data.map((s: DbService): SalonService => ({
       id: s.id,
+      businessId: s.business_id,
       title: s.title,
       category: (s.category || 'HAIRCUTS') as any,
       description: s.description || '',
@@ -264,10 +281,12 @@ export async function getFullStaff(businessId?: string): Promise<DbStaff[]> {
       query = query.eq('business_id', businessId);
     }
     const { data, error } = await query;
-    if (error || !data || data.length === 0) {
+    if (error) {
+      console.warn('Failed to query staff from Supabase:', error);
       return localStaff;
     }
-    return data as DbStaff[];
+    // Return real database records if query succeeded
+    return (data || []) as DbStaff[];
   } catch (err) {
     console.warn('Failed to load full staff:', err);
     return localStaff;
@@ -507,7 +526,11 @@ export async function getBookings(filter?: {
         depositAmount: b.deposit_amount ? Number(b.deposit_amount) : 0,
         clientNote: b.client_note || undefined,
         location: b.businesses?.location || 'Unit 302, High Street South, BGC, Taguig',
-        businessName: b.businesses?.name || 'Studio Bloom'
+        businessName: b.businesses?.name || 'Studio Bloom',
+        businessId: b.business_id,
+        staffId: b.staff_id,
+        clientUserId: b.client_user_id,
+        serviceId: b.service_id
       };
     });
   } catch (err) {
@@ -758,12 +781,17 @@ export async function createReview(review: {
   rating: number;
   comment?: string;
 }): Promise<DbReview> {
+  if (review.rating < 1 || review.rating > 5) {
+    throw new Error('Rating must be between 1 and 5 stars.');
+  }
+
+  // Check for duplicate review
+  const existing = await getBookingReview(review.booking_id);
+  if (existing) {
+    throw new Error('A review has already been submitted for this appointment.');
+  }
+
   if (!isSupabaseConfigured) {
-    // Check local duplicate
-    const existing = localReviews.find(r => r.booking_id === review.booking_id);
-    if (existing) {
-      throw new Error('A review has already been submitted for this appointment.');
-    }
     const newRev: DbReview = {
       id: `rev-${Date.now()}`,
       booking_id: review.booking_id,
@@ -771,7 +799,7 @@ export async function createReview(review: {
       business_id: review.business_id,
       staff_id: review.staff_id || null,
       rating: review.rating,
-      comment: review.comment || null,
+      comment: review.comment?.trim() || null,
       created_at: new Date().toISOString()
     };
     localReviews.push(newRev);
@@ -786,7 +814,7 @@ export async function createReview(review: {
       business_id: review.business_id,
       staff_id: review.staff_id || null,
       rating: review.rating,
-      comment: review.comment || null
+      comment: review.comment?.trim() || null
     }])
     .select()
     .single();
@@ -812,6 +840,22 @@ export async function getBookingReview(bookingId: string): Promise<DbReview | nu
     return data as DbReview;
   } catch {
     return null;
+  }
+}
+
+export async function getUserReviews(userId: string): Promise<DbReview[]> {
+  if (!isSupabaseConfigured) {
+    return localReviews.filter(r => r.user_id === userId);
+  }
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('user_id', userId);
+    if (error || !data) return [];
+    return data as DbReview[];
+  } catch {
+    return [];
   }
 }
 
@@ -878,8 +922,14 @@ export async function submitMerchantKyc(params: {
   mayors_permit: boolean;
   document_url?: string;
 }): Promise<DbKycRequest> {
+  if (!params.business_id) {
+    throw new Error('Business ID is required for KYC submission');
+  }
+
   if (!isSupabaseConfigured) {
-    const nextStatus: KycStatus = localMerchantKyc.status === 'rejected' ? 'resubmitted' : 'pending';
+    if (localMerchantKyc.business_id === params.business_id && localMerchantKyc.status === 'verified') {
+      throw new Error('Business is already KYC verified. Compliance changes require platform review.');
+    }
     localMerchantKyc = {
       ...localMerchantKyc,
       business_id: params.business_id,
@@ -887,38 +937,103 @@ export async function submitMerchantKyc(params: {
       dti_verified: params.dti_verified,
       mayors_permit: params.mayors_permit,
       document_url: params.document_url || localMerchantKyc.document_url,
-      status: nextStatus,
+      status: 'pending',
+      issue_note: null,
+      issue_detail: null,
       updated_at: new Date().toISOString()
     };
     return localMerchantKyc;
   }
 
-  // Check if existing record exists
+  // Validate authenticated user owns this business (or is admin)
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user?.id) {
+    const { data: biz } = await supabase
+      .from('businesses')
+      .select('id, owner_id')
+      .eq('id', params.business_id)
+      .maybeSingle();
+
+    if (biz && biz.owner_id !== user.id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profile?.role !== 'admin') {
+        throw new Error('Unauthorized: You can only submit KYC verification for your own business.');
+      }
+    }
+  }
+
+  // Check if existing record exists for this business
   const { data: existing } = await supabase
     .from('kyc_requests')
-    .select('id, status')
+    .select('*')
     .eq('business_id', params.business_id)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (existing?.id) {
-    const nextStatus: KycStatus = existing.status === 'rejected' ? 'resubmitted' : 'pending';
-    const { data, error } = await supabase
+    if (existing.status === 'verified') {
+      throw new Error('Business is already KYC verified. Compliance changes require platform review.');
+    }
+
+    // Try updating existing request (status always set to 'pending' per requirement 6)
+    const { data: updateData, error: updateError } = await supabase
       .from('kyc_requests')
       .update({
         tin: params.tin,
         dti_verified: params.dti_verified,
         mayors_permit: params.mayors_permit,
         document_url: params.document_url || null,
-        status: nextStatus,
+        status: 'pending',
+        issue_note: null,
+        issue_detail: null,
         updated_at: new Date().toISOString()
       })
       .eq('id', existing.id)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (error) throw new Error(error.message);
-    return data as DbKycRequest;
+    if (!updateError && updateData) {
+      return updateData as DbKycRequest;
+    }
+
+    // If existing request was rejected and direct update was restricted by RLS,
+    // insert a new pending request (permitted for business owner by kyc_insert policy)
+    if (existing.status === 'rejected') {
+      const { data: insertData, error: insertError } = await supabase
+        .from('kyc_requests')
+        .insert([{
+          business_id: params.business_id,
+          tin: params.tin,
+          dti_verified: params.dti_verified,
+          mayors_permit: params.mayors_permit,
+          document_url: params.document_url || null,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (insertError) throw new Error(insertError.message);
+      return insertData as DbKycRequest;
+    }
+
+    // If existing request was already pending, avoid creating duplicate pending requests
+    if (existing.status === 'pending') {
+      if (updateError) {
+        console.warn('KYC update notice:', updateError.message);
+      }
+      return existing as DbKycRequest;
+    }
+
+    if (updateError) throw new Error(updateError.message);
+    return existing as DbKycRequest;
   } else {
+    // New KYC request insertion
     const { data, error } = await supabase
       .from('kyc_requests')
       .insert([{

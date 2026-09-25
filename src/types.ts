@@ -27,6 +27,10 @@ export interface Booking {
   clientNote?: string;
   location?: string;
   businessName: string;
+  businessId?: string;
+  staffId?: string | null;
+  clientUserId?: string | null;
+  serviceId?: string;
 }
 
 export interface Studio {
@@ -50,6 +54,7 @@ export interface Studio {
 
 export interface SalonService {
   id: string;
+  businessId?: string;
   title: string;
   category: 'HAIRCUTS' | 'COLOR' | 'CHEMICAL' | 'NAILS' | 'WELLNESS';
   description: string;

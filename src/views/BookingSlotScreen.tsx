@@ -54,7 +54,7 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
         const startAt = new Date(Date.UTC(2026, 9, selectedDay, hours, minutes)).toISOString();
 
         const dbBooking = await createBookingRpc({
-          business_id: '00000000-0000-0000-0000-000000000001',
+          business_id: service.businessId || '00000000-0000-0000-0000-000000000001',
           service_id: service.id,
           start_at: startAt,
           client_name: profile?.full_name || user.email?.split('@')[0] || 'Alex Santos',
@@ -93,6 +93,9 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
         paymentMethod: service.deposit ? 'GCash Deposit' : 'Pay at Venue (Cash / GCash / Card)',
         location: 'Unit 302, High Street South, BGC, Taguig',
         businessName: 'Studio Bloom',
+        businessId: service.businessId || '00000000-0000-0000-0000-000000000001',
+        serviceId: service.id,
+        clientUserId: user?.id || null,
         clientNote: clientNotes
       };
 
@@ -132,7 +135,13 @@ export const BookingSlotScreen: React.FC<BookingSlotScreenProps> = ({
       <div className="px-4 py-3 bg-[#f1f3ff] flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-white shrink-0 border border-[#e9edff]">
-            <img referrerPolicy="no-referrer"  src={service.image} alt={service.title} className="w-full h-full object-cover" />
+            <img
+              src={service.image}
+              alt={service.title}
+              referrerPolicy="no-referrer"
+              onError={(e) => { e.currentTarget.src = ASSETS.haircutService; }}
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <h3 className="text-[14px] font-bold text-[#141b2b]">{service.title}</h3>

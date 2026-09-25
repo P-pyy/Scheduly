@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Booking } from '../types';
 import { ASSETS, INITIAL_STYLISTS, INITIAL_SERVICES } from '../data/mockData';
-import { getMerchantKyc, submitMerchantKyc } from '../lib/database';
+import { getMerchantKyc, submitMerchantKyc, getBusinessByOwnerId } from '../lib/database';
 import { DbKycRequest } from '../lib/database.types';
+import { useAuth } from '../hooks/useAuth';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface BusinessOverviewScreenProps {
   bookings: Booking[];
@@ -19,7 +21,12 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
   onAddBooking,
   onTriggerToast
 }) => {
+  const { user } = useAuth();
   const [storeIsOpen, setStoreIsOpen] = useState(true);
+
+  // Authenticated Business Owner Context
+  const [ownerBusinessId, setOwnerBusinessId] = useState<string>('00000000-0000-0000-0000-000000000001');
+  const [ownerBusinessName, setOwnerBusinessName] = useState<string>('Studio Bloom');
 
   // Modals
   const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
@@ -35,10 +42,30 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
   const [isSubmittingKyc, setIsSubmittingKyc] = useState(false);
 
   useEffect(() => {
-    async function loadKyc() {
+    let isMounted = true;
+    async function loadKycAndBusiness() {
+      let bizId = '00000000-0000-0000-0000-000000000001';
+      let bizName = 'Studio Bloom';
+
+      if (user?.id && isSupabaseConfigured) {
+        try {
+          const ownerBiz = await getBusinessByOwnerId(user.id);
+          if (ownerBiz?.id) {
+            bizId = ownerBiz.id;
+            bizName = ownerBiz.name;
+            if (isMounted) {
+              setOwnerBusinessId(ownerBiz.id);
+              setOwnerBusinessName(ownerBiz.name);
+            }
+          }
+        } catch (e) {
+          console.warn('Error resolving business for owner in overview:', e);
+        }
+      }
+
       try {
-        const data = await getMerchantKyc('00000000-0000-0000-0000-000000000001');
-        if (data) {
+        const data = await getMerchantKyc(bizId);
+        if (isMounted && data) {
           setKycData(data);
           if (data.tin) setKycTin(data.tin);
           setKycDti(data.dti_verified);
@@ -49,11 +76,18 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
         console.warn('Failed to load merchant KYC in overview:', err);
       }
     }
-    loadKyc();
-  }, []);
+    loadKycAndBusiness();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   const handleSubmitKyc = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (kycData?.status === 'verified') {
+      onTriggerToast('Business is already KYC verified.', 'verified');
+      return;
+    }
     if (!kycTin.trim()) {
       onTriggerToast('Please enter your business Tax Identification Number (TIN)', 'warning');
       return;
@@ -61,7 +95,7 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
     setIsSubmittingKyc(true);
     try {
       const updated = await submitMerchantKyc({
-        business_id: '00000000-0000-0000-0000-000000000001',
+        business_id: ownerBusinessId,
         tin: kycTin.trim(),
         dti_verified: kycDti,
         mayors_permit: kycMayorsPermit,
@@ -69,12 +103,7 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
       });
       setKycData(updated);
       setIsKycModalOpen(false);
-      onTriggerToast(
-        updated.status === 'resubmitted'
-          ? 'Merchant verification documents resubmitted for compliance review! 🛡️'
-          : 'Merchant verification documents submitted! 🛡️',
-        'verified'
-      );
+      onTriggerToast('Merchant verification documents submitted for compliance review! 🛡️', 'verified');
     } catch (err: any) {
       console.warn('Failed to submit KYC:', err);
       onTriggerToast(err.message || 'Failed to submit verification documents', 'error');
@@ -172,7 +201,7 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-[17px] font-bold text-[#141b2b] font-display">Jamie Lim</h1>
-                <span className="text-[11px] font-semibold text-[#464555]">Studio Bloom</span>
+                <span className="text-[11px] font-semibold text-[#464555]">{ownerBusinessName}</span>
                 {/* Merchant KYC Verification Pill */}
                 <button
                   onClick={() => setIsKycModalOpen(true)}
@@ -181,8 +210,6 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                       ? 'bg-[#eafaf1] text-[#00702f] hover:bg-[#d5f5e3]'
                       : kycData?.status === 'rejected'
                       ? 'bg-[#fee2e2] text-[#991b1b] hover:bg-[#fecaca]'
-                      : kycData?.status === 'resubmitted'
-                      ? 'bg-[#fef3c7] text-[#92400e] hover:bg-[#fde68a]'
                       : 'bg-[#e9edff] text-[#3525cd] hover:bg-[#dce2f7]'
                   }`}
                   title="Click to view Merchant KYC verification status"
@@ -199,8 +226,6 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                       ? 'KYC Verified'
                       : kycData?.status === 'rejected'
                       ? 'KYC Action Req.'
-                      : kycData?.status === 'resubmitted'
-                      ? 'KYC In Review'
                       : 'KYC Pending'}
                   </span>
                 </button>
@@ -745,8 +770,6 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                   ? 'bg-[#eafaf1] border-[#7ffc97] text-[#002109]'
                   : kycData?.status === 'rejected'
                   ? 'bg-[#fff0f0] border-[#ffb4ab] text-[#ba1a1a]'
-                  : kycData?.status === 'resubmitted'
-                  ? 'bg-[#fff8e6] border-[#ffe8b3] text-[#78350f]'
                   : 'bg-[#e9edff] border-[#c8d5ff] text-[#141b2b]'
               }`}
             >
@@ -763,18 +786,23 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                     ? 'Status: Verified & Active Partner'
                     : kycData?.status === 'rejected'
                     ? 'Status: Action Required (Rejected)'
-                    : kycData?.status === 'resubmitted'
-                    ? 'Status: Re-submitted for Review'
                     : 'Status: Pending Verification'}
                 </span>
               </div>
-              <p className="text-[12px] opacity-90 leading-relaxed">
-                {kycData?.status === 'verified'
-                  ? 'Studio Bloom is fully cleared for instant digital checkouts and daily payouts.'
-                  : kycData?.status === 'rejected'
-                  ? `${kycData.issue_note || 'Issue noted'}: ${kycData.issue_detail || 'Please provide current documentation.'}`
-                  : 'Your submission is queued for automated & supervisory review.'}
-              </p>
+              <div className="text-[12px] opacity-90 leading-relaxed">
+                {kycData?.status === 'verified' ? (
+                  <p>{ownerBusinessName} is verified. Cleared for instant digital checkouts, directory discovery, and daily payouts.</p>
+                ) : kycData?.status === 'rejected' ? (
+                  <div className="flex flex-col gap-0.5">
+                    <p>
+                      <strong>{kycData.issue_note || 'Correction Needed'}:</strong> {kycData.issue_detail || 'Please update and resubmit your valid business permits.'}
+                    </p>
+                    <p className="text-[11px] opacity-80">Correct the fields below and resubmit for compliance re-examination.</p>
+                  </div>
+                ) : (
+                  <p>Your verification documents are queued for automated & supervisory compliance review.</p>
+                )}
+              </div>
             </div>
 
             {/* KYC Submission Form */}
@@ -786,10 +814,11 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                 <input
                   type="text"
                   required
+                  disabled={kycData?.status === 'verified'}
                   value={kycTin}
                   onChange={e => setKycTin(e.target.value)}
                   placeholder="e.g. 284-918-331-000"
-                  className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[13px] text-[#141b2b] font-mono focus:outline-none focus:border-[#3525cd]"
+                  className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[13px] text-[#141b2b] font-mono focus:outline-none focus:border-[#3525cd] disabled:opacity-70 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -798,43 +827,69 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                   Regulatory Permits &amp; Clearances
                 </span>
 
-                <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <label className={`flex items-center justify-between gap-3 ${kycData?.status === 'verified' ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
                   <span className="text-[13px] font-medium text-[#141b2b]">
                     DTI Certificate of Registration
                   </span>
                   <input
                     type="checkbox"
+                    disabled={kycData?.status === 'verified'}
                     checked={kycDti}
                     onChange={e => setKycDti(e.target.checked)}
-                    className="w-5 h-5 text-[#3525cd] rounded cursor-pointer"
+                    className="w-5 h-5 text-[#3525cd] rounded cursor-pointer disabled:cursor-not-allowed"
                   />
                 </label>
 
-                <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <label className={`flex items-center justify-between gap-3 ${kycData?.status === 'verified' ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
                   <span className="text-[13px] font-medium text-[#141b2b]">
                     2026 Mayor's / LGU Business Permit
                   </span>
                   <input
                     type="checkbox"
+                    disabled={kycData?.status === 'verified'}
                     checked={kycMayorsPermit}
                     onChange={e => setKycMayorsPermit(e.target.checked)}
-                    className="w-5 h-5 text-[#3525cd] rounded cursor-pointer"
+                    className="w-5 h-5 text-[#3525cd] rounded cursor-pointer disabled:cursor-not-allowed"
                   />
                 </label>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
-                  Document Storage URL / PDF Permit Link
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#464555]">
+                    Document Storage URL / PDF Permit Link
+                  </label>
+                  {kycDocUrl && (
+                    <a
+                      href={kycDocUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-semibold text-[#3525cd] hover:underline inline-flex items-center gap-0.5"
+                    >
+                      <span>Preview</span>
+                      <span className="material-symbols-outlined text-[13px]">open_in_new</span>
+                    </a>
+                  )}
+                </div>
                 <input
                   type="url"
+                  disabled={kycData?.status === 'verified'}
                   value={kycDocUrl}
                   onChange={e => setKycDocUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[12px] text-[#141b2b] font-mono focus:outline-none focus:border-[#3525cd]"
+                  className="w-full mt-1 px-3 h-10 rounded-xl bg-[#f1f3ff] border border-[#e9edff] text-[12px] text-[#141b2b] font-mono focus:outline-none focus:border-[#3525cd] disabled:opacity-70 disabled:cursor-not-allowed"
                 />
+                <p className="mt-1 text-[11px] text-[#777587] leading-tight">
+                  Direct file upload requires a Supabase Storage bucket. You can provide a direct secure link (Google Drive, cloud PDF, Dropbox, or hosted file) above.
+                </p>
               </div>
+
+              {kycData?.status === 'verified' && (
+                <div className="p-2.5 rounded-xl bg-[#eafaf1] text-[#00702f] text-[11px] flex items-center gap-1.5 font-medium">
+                  <span className="material-symbols-outlined text-[15px]">lock</span>
+                  <span>Compliance records are verified and locked. Contact support for regulatory amendments.</span>
+                </div>
+              )}
 
               <div className="flex gap-2 pt-3 border-t border-[#e9edff]">
                 <button
@@ -844,22 +899,31 @@ export const BusinessOverviewScreen: React.FC<BusinessOverviewScreenProps> = ({
                 >
                   Close
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingKyc}
-                  className="flex-1 py-2.5 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[13px] font-semibold shadow-xs cursor-pointer disabled:opacity-60 flex items-center justify-center gap-1.5"
-                >
-                  {isSubmittingKyc ? (
-                    <>
-                      <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
-                      <span>Submitting...</span>
-                    </>
-                  ) : kycData?.status === 'rejected' ? (
-                    <span>Resubmit KYC Documents</span>
-                  ) : (
-                    <span>Update KYC Documents</span>
-                  )}
-                </button>
+                {kycData?.status === 'verified' ? (
+                  <div className="flex-1 py-2.5 rounded-xl bg-[#eafaf1] text-[#00702f] border border-[#7ffc97] text-[13px] font-bold flex items-center justify-center gap-1.5 cursor-default">
+                    <span className="material-symbols-outlined text-[16px]">verified</span>
+                    <span>Verified Partner</span>
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmittingKyc}
+                    className="flex-1 py-2.5 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] text-white text-[13px] font-semibold shadow-xs cursor-pointer disabled:opacity-60 flex items-center justify-center gap-1.5"
+                  >
+                    {isSubmittingKyc ? (
+                      <>
+                        <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                        <span>Submitting...</span>
+                      </>
+                    ) : kycData?.status === 'rejected' ? (
+                      <span>Resubmit KYC Documents</span>
+                    ) : kycData?.status === 'pending' ? (
+                      <span>Update KYC Documents</span>
+                    ) : (
+                      <span>Submit Verification Documents</span>
+                    )}
+                  </button>
+                )}
               </div>
             </form>
           </div>

@@ -105,6 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
                 src={appMode === 'business' ? ASSETS.studioLogo : ASSETS.logo}
                 alt="Logo"
                 referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.src = ASSETS.logo; }}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -365,6 +366,7 @@ export const Header: React.FC<HeaderProps> = ({
               src={profile?.avatar_url || (appMode === 'client' ? ASSETS.userProfile : ASSETS.ownerProfile)}
               alt="Profile"
               referrerPolicy="no-referrer"
+              onError={(e) => { e.currentTarget.src = ASSETS.userProfile; }}
               className="w-8 h-8 rounded-full object-cover ring-1 ring-[#c7c4d8]/30 shadow-xs group-hover:ring-2 group-hover:ring-[#3525cd] transition-all"
             />
           </button>

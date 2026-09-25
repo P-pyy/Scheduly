@@ -30,7 +30,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <>
             <button
               onClick={() => setClientTab('home')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Home"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 clientTab === 'home'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -42,7 +43,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setClientTab('explore')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Explore Studios"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 clientTab === 'explore'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -54,7 +56,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setClientTab('bookings')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="My Bookings"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 clientTab === 'bookings'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -69,7 +72,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setClientTab('favorites')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Saved Favorites"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 clientTab === 'favorites'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -81,7 +85,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setClientTab('profile')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="My Profile"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 clientTab === 'profile'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -98,7 +103,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <>
             <button
               onClick={() => setBusinessTab('overview')}
-              className={`flex-1 min-w-[56px] h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Business Overview"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 businessTab === 'overview'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#3525cd]'
@@ -110,7 +116,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setBusinessTab('calendar')}
-              className={`flex-1 min-w-[56px] h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Business Calendar"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 businessTab === 'calendar'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#3525cd]'
@@ -122,7 +129,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setBusinessTab('bookings')}
-              className={`flex-1 min-w-[56px] h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Business Bookings"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 businessTab === 'bookings'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#3525cd]'
@@ -134,7 +142,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setBusinessTab('clients')}
-              className={`flex-1 min-w-[56px] h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Business Clients CRM"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 businessTab === 'clients'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#3525cd]'
@@ -146,7 +155,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={onOpenMoreMenu}
-              className={`flex-1 min-w-[56px] h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="More Business Tools"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 businessTab === 'services' || businessTab === 'analytics'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#3525cd]'
@@ -163,7 +173,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <>
             <button
               onClick={() => setAdminTab('overview')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Admin Pulse Overview"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 adminTab === 'overview'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -175,7 +186,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setAdminTab('businesses')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Businesses KYC Verification"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 adminTab === 'businesses'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -187,7 +199,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setAdminTab('users')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="User Directory Management"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 adminTab === 'users'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -199,7 +212,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setAdminTab('reports')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Moderation & Reports"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 adminTab === 'reports'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'
@@ -211,7 +225,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
             <button
               onClick={() => setAdminTab('settings')}
-              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label="Platform Settings"
+              className={`flex-1 min-w-0 h-12 flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer ${
                 adminTab === 'settings'
                   ? 'text-[#3525cd] font-semibold'
                   : 'text-[#464555] hover:text-[#141b2b]'

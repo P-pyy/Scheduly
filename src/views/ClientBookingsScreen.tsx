@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Booking } from '../types';
 import { ASSETS } from '../data/mockData';
 import { useAuth } from '../hooks/useAuth';
-import { createReview } from '../lib/database';
+import { createReview, getUserReviews } from '../lib/database';
 
 interface ClientBookingsScreenProps {
   bookings: Booking[];
@@ -34,9 +34,25 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
 
   const [reviewModalBooking, setReviewModalBooking] = useState<Booking | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('Wonderful haircut! Stylist was super professional and attentive to scalp sensitivity.');
+  const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>(['SC-8918']);
+
+  useEffect(() => {
+    async function loadReviews() {
+      if (user?.id) {
+        try {
+          const userRevs = await getUserReviews(user.id);
+          if (userRevs && userRevs.length > 0) {
+            setReviewedBookingIds(prev => Array.from(new Set([...prev, ...userRevs.map(r => r.booking_id)])));
+          }
+        } catch (err) {
+          console.warn('Failed to load user reviews from Supabase:', err);
+        }
+      }
+    }
+    loadReviews();
+  }, [user?.id]);
 
   const activeBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
   const pastBookings = bookings.filter(b => b.status === 'completed');
@@ -109,19 +125,22 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
     try {
       // Derive authenticated context safely
       const userId = user?.id || '00000000-0000-0000-0000-000000000011';
-      const businessId = '00000000-0000-0000-0000-000000000001';
+      const businessId = reviewModalBooking.businessId || '00000000-0000-0000-0000-000000000001';
+      const staffId = reviewModalBooking.staffId || null;
 
       await createReview({
         booking_id: reviewModalBooking.id,
         user_id: userId,
         business_id: businessId,
+        staff_id: staffId,
         rating: reviewRating,
-        comment: reviewComment.trim()
+        comment: reviewComment.trim() || undefined
       });
 
       setReviewedBookingIds(prev => [...prev, reviewModalBooking.id]);
       onTriggerToast(`Thank you! Your ${reviewRating}-star review has been published for ${reviewModalBooking.businessName} ⭐`, 'stars');
       setReviewModalBooking(null);
+      setReviewComment('');
     } catch (err: any) {
       console.warn('Failed to submit review:', err);
       onTriggerToast(err.message || 'Unable to submit review. Please try again.', 'error');
@@ -398,7 +417,11 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
                   </div>
                 ) : (
                   <button
-                    onClick={() => setReviewModalBooking(booking)}
+                    onClick={() => {
+                      setReviewRating(5);
+                      setReviewComment('');
+                      setReviewModalBooking(booking);
+                    }}
                     className="flex-1 py-2 rounded-xl bg-[#f1f3ff] hover:bg-[#e9edff] text-[#3525cd] text-[12px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px]">rate_review</span>
@@ -659,7 +682,7 @@ export const ClientBookingsScreen: React.FC<ClientBookingsScreenProps> = ({
               </button>
               <button
                 type="button"
-                disabled={isSubmittingReview || !reviewComment.trim()}
+                disabled={isSubmittingReview || reviewRating < 1 || reviewRating > 5}
                 onClick={handleSubmitReview}
                 className="flex-1 py-2.5 rounded-xl bg-[#3525cd] hover:bg-[#4f46e5] disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
               >
